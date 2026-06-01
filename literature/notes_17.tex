@@ -1,0 +1,776 @@
+%2multibyte Version: 5.50.0.2953 CodePage: 1251
+\documentclass[12pt]{article}%
+\usepackage{amsmath,amsthm,enumerate,graphicx,microtype,amssymb,setspace,verbatim,multirow}
+\usepackage[margin= 1in]{geometry}
+\usepackage[font={footnotesize}]{caption,subfig}
+\usepackage{caption}
+\usepackage{setspace}
+\usepackage{natbib}
+\usepackage{subfig}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{dsfont}
+\usepackage{bbm}
+\usepackage{setspace}
+\usepackage{soul}
+\usepackage{color}
+\usepackage{chngcntr}
+\usepackage{todonotes}%
+\setcounter{MaxMatrixCols}{30}
+%TCIDATA{OutputFilter=latex2.dll}
+%TCIDATA{Version=5.50.0.2953}
+%TCIDATA{Codepage=1251}
+%TCIDATA{LastRevised=Wednesday, November 08, 2023 18:51:01}
+%TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
+%TCIDATA{<META NAME="SaveForMode" CONTENT="1">}
+%TCIDATA{BibliographyScheme=Manual}
+%BeginMSIPreambleData
+\providecommand{\U}[1]{\protect\rule{.1in}{.1in}}
+%EndMSIPreambleData
+\providecommand{\U}[1]{\protect\rule{.1in}{.1in}}
+\onehalfspacing
+\renewcommand{\labelenumiii}{(\roman{enumiii})}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\diag}{diag}
+\setlength{\parindent}{1 cm}
+\newtheorem*{Prop1}{Proposition 1}
+\newtheorem*{Prop2}{Proposition 2}
+\newtheorem*{Prop3}{Proposition 3}
+\newtheorem{Prop}{Proposition}
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{corollary2}{Corollary 2}
+\newcommand{\chg}[2]{{\st{#1}} {\color{red}{#2}}}
+\newcommand{\distas}[1]{\mathbin{\overset{#1}{\kern\z@\sim}}}
+\newsavebox{\mybox}\newsavebox{\mysim}
+\newcommand{\distras}[1]{	\savebox{\mybox}{\hbox{\kern3pt$\scriptstyle#1$\kern3pt}}	\savebox{\mysim}{\hbox{$\sim$}}	\mathbin{\overset{#1}{\kern\z@\resizebox{\wd\mybox}{\ht\mysim}{$\sim$}}}}
+\makeatother
+\renewcommand{\thefigure}{\Roman{figure}}
+\renewcommand{\thetable}{\Roman{table}}
+\pagenumbering{arabic} \onehalfspacing
+\begin{document}
+
+\title{An economic model of reinforcement learning}
+\maketitle
+
+.\bigskip
+
+\section{Definitions}
+
+Policy is a mapping from states to probabilities over action
+\[
+\pi(a|s)
+\]
+Q-function: State-action values of following a policy $\pi(a|s)$ in the
+future, and implement a specific $a_{t}$ today%
+
+\[
+Q_{\pi}(s_{t},a_{t})=r(s_{t},a_{t})+\beta E_{t}Q_{\pi}(s_{t+1},\pi(s_{t+1}))
+\]
+
+
+Value function: value in state $s$ of following policy $\pi(a|s)$
+\begin{equation}
+V_{\pi}(s)=\sum_{a}\pi(a|s)Q_{\pi}(s,a) \label{v_pi_s}%
+\end{equation}
+
+
+\section{Bayesian resource-rational framework of learning}
+
+\subsection{Object the agent is learning about}
+
+We assume the agent is trying to learn the true, full-information optimal
+Q-function $Q_{\pi^{*}}(s,a)$ where the optimal policy $\pi^{*}(a|s)$
+satisfies the Bellman equation%
+
+\[
+V^{*}(s_{t}) = \max_{a_{t}} r(s_{t},a_{t}) + \beta E_{t}( V(s_{t+1}))
+\]
+
+
+The optimal policy function $\pi^{*}(a|s)$ defines the optimal Q-function:
+\[
+Q_{\pi^{*}}(s_{t},a_{t})=r(s_{t},a_{t})+\beta E_{t}Q_{\pi^{*}} (s_{t+1}%
+,\pi^{*}(s_{t+1}))
+\]
+
+
+The agent will learn about the optimal Q-value function $Q_{\pi^{*}}(s,a)$
+defined above.
+
+\subsection{Policies}
+
+Each period the agent enters with some beliefs about the Q-function, those
+beliefs follow a Gaussian Process distribution so that conditional on the
+$t-1$ information set $\mathcal{I}_{t-1}$ (which is what the agent enters time
+$t$ with)%
+
+\[
+Q_{\pi^{*}}(s,a) | \mathcal{I}_{t-1} \sim GP( \widehat Q_{t-1}(s,a),
+\widehat\Sigma_{t-1}( s,a,s^{\prime},a^{\prime}))
+\]
+
+
+In period $t$, the agent follows the following policy function that defines
+his actions. Conditional on the (updated) information set $\mathcal{I}_{t}$,
+the probability of selecting action $a$ given state $s_{t}$ is
+\[
+\pi_{t}(s_{t})=\pi(\widehat{Q}_{t}(s_{t},a),\theta_{t}(s_{t}))=\frac
+{\exp(\theta_{t}(s_{t})\widehat{Q}_{t}(s_{t},a))}{\sum_{a^{\prime}}\exp
+(\theta_{t}(s_{t})\widehat{Q}_{t}(s_{t},a^{\prime}))}%
+\]
+
+
+Here $\widehat{Q}_{t}(s_{t},a)$ is the conditional expectation of the Q-value
+function and $\theta_{t}(s_{t})$ is a temperature parameter. We can treat the
+latter as a constant%
+\[
+\theta_{t}(s)=\theta,\text{ for all (}s,t)
+\]
+or, more interestingly, have it take the following form:
+\[
+\theta_{t}(s)=\theta_{0}\frac{\Sigma_{V,0}(s)}{\Sigma_{V,t-1}(s)}%
+\]
+where $\Sigma_{V}(s)$ will be a measure of perceived uncertainty, which we
+will define below.
+
+Also define the 'greedy' policy as
+\begin{align*}
+\pi_{t-1}^{greedy}(a_{t}  &  =\widehat{a}_{t-1}^{\max}(s_{t})|s_{t})=1\\
+\pi_{t-1}^{greedy}(a_{t}  &  \neq\widehat{a}_{t-1}^{\max}(s_{t})|s_{t})=0\\
+\widehat{a}_{t-1}^{\max}(s_{t})  &  =\arg\max_{a}\widehat{Q}_{t-1}(s_{t}%
+,a_{t})
+\end{align*}
+
+
+\subsection{Updating}
+
+For any state $s,$ compute the expected return%
+\[
+\widehat{V}_{t-1}(s)=\sum_{a}\pi_{t-1}(a_{t}=a|s)\widehat{Q}_{t-1}(s,a_{t})
+\]
+
+
+This is a variable measurable in the time $t-1$ information set, hence it is
+known at the beginning of time $t$. It is the expected value of the following
+random variable:%
+
+\[
+V_{t-1}^{true}(s)\equiv\sum_{a}\pi_{t-1}(a_{t}=a|s)Q_{\pi}^{\ast}(s,a_{t})
+\]
+The policy $\pi_{t-1}(a|s)$ is known as of time $t$, and the randomness comes
+from the uncertainty over the unknown optimal $Q_{\pi^{*}}(s,a).$
+
+Based on prior information, this random variable has a distribution%
+\begin{align*}
+V_{t-1}^{true}(s_{t})  &  \sim N(\widehat{V}_{t-1}(s_{t}),\Sigma_{V,t-1}%
+(s_{t}))\\
+\Sigma_{V,t-1}(s_{t})  &  = Var_{t-1}( \sum_{a}\pi_{t-1}(a|s_{t})Q_{\pi^{*}%
+}(s_{t},a)) = \pi_{t-1}(a|s_{t})^{\prime}\widehat{\Sigma}_{t-1}(a,s_{t}%
+,a^{\prime},s_{t}) \pi_{t-1}( a^{\prime}|s_{t})
+\end{align*}
+where $\widehat{\Sigma}_{t-1}(a,s,a^{\prime},s)$ is a two-dimensional matrix,
+which evaluates the variance-covariance of $Q_{\pi^{*}}(s,a)$ at a fixed
+$s_{t}$. So then $\pi_{t-1}(a|s_{t})^{\prime}\widehat{\Sigma}_{t-1}%
+(a,s_{t},a^{\prime},s_{t}) \pi_{t-1}( a^{\prime}|s_{t})$ is the typical
+sandwich expression for the variance of the linear combination $\sum_{a}%
+\pi_{t-1}(a|s_{t})\widehat{Q}_{t-1}(s_{t},a)$.
+
+%we define $\sigma_{Q,t-1}^{2}(s,a) = \widehat{\Sigma}_{t-1}(s,a,s,a) = Var_{t-1}( Q_{\pi^*}(s,a))$ as the posterior variance over $Q$ at the particular input of $(s,a)$. It is computed by evaluating the variance-covariance function at $(s,a,s,a)$ (i.e. it is on the diagonal).
+
+
+\subsubsection{Deliberation (i.e. model-based reasoning)}
+
+\paragraph{Resource-rationality, conditional trigger of reasoning}
+
+The agent looks at $\Sigma_{V,t-1}(s_{t})$ and decides whether to engage in
+additional reasoning to reduce this uncertainty. The agent's objective
+function in deciding whether to engage in extra reasoning is a tracking
+problem of the form
+\[
+\min_{\Sigma_{V,t}(s_{t})}E\left(  \widehat{V}_{t}(s_{t})-V_{t-1}^{true}%
+(s_{t})\right)  ^{2}+\kappa\ln\left(  \frac{\Sigma_{V,t-1}(s_{t})}%
+{\Sigma_{V,t}(s_{t})}\right)
+\]
+where $\kappa$ is the marginal cost of reducing further uncertainty through
+reasoning. This objective is then%
+\[
+\min_{\widetilde{\Sigma}_{V,t}(s_{t})} \widetilde{\Sigma}_{V,t}(s_{t}%
+)+\kappa\ln\left(  \frac{\Sigma_{V,t-1}(s_{t})}{\widetilde{\Sigma}_{V,t}%
+(s_{t})}\right)  .
+\]
+where
+\[
+\widetilde{\Sigma}_{V,t}(s_{t})= Var(\sum_{a}\pi_{t-1}(a|s_{t}) Q_{\pi^{*}}
+(s,a) | \mathcal{I}_{t-1}, \eta_{t}^{R})
+\]
+where $Var( Q_{\pi^{*}} (s,a) | \mathcal{I}_{t-1}, \eta_{t}^{R})$ is the
+updated conditional uncertainty after observing the new signal $\eta_{t}^{R}$,
+which we define below. The optimal information choice is%
+
+\begin{align}
+\label{eq: opt_info}\widetilde{\Sigma}_{V,t} = \min\{ \kappa, \Sigma
+_{V,t-1}(s_{t}) \}
+\end{align}
+
+
+\subsubsection{Mental simulation, model-based learning}
+
+Each period $t$, internal deliberation produces a noisy signal $\eta_{t}%
+^{R}(s_{t},a_{t})$%
+
+\[
+\eta_{t}^{R}=\sum_{a}\pi_{t-1}(a|s_{t})Q_{\pi^{*}}(s_{t},a )+\varepsilon
+_{t}^{R}%
+\]
+where $\varepsilon_{t}^{R} \sim N(0, \sigma_{\eta^{R},t}^{2})$, where the
+variance of the noise follows from the above optimal information choice in
+(\ref{eq: opt_info}):%
+
+\[
+\sigma_{\eta^{R},t}^{2}=
+\begin{cases}
+\frac{\kappa{\Sigma}_{V,t-1}(s_{t})}{ {\Sigma}_{V,t-1}(s_{t})-\kappa} & \text{
+, if } {\Sigma}_{V,t-1}(s_{t}) > \kappa.\\
+\infty & \text{ , if } {\Sigma}_{V,t-1}(s_{t}) \leq\kappa.
+\end{cases}
+\]
+
+
+Then use that signal to update beliefs%
+
+\[
+\widehat{Q}_{t}^{R}(s,a)=\widehat{Q}_{t-1}(s,a)+\alpha_{t}^{R}(s,a)\left(
+\eta_{t}^{R}-\sum_{a^{\prime}}\pi_{t-1}(a^{\prime}|s_{t})\widehat{Q}%
+_{t-1}(s_{t},a^{\prime})\right)
+\]
+
+
+where we can derive $\alpha_{t}^{R}(s,a)$ as follows:%
+\begin{align*}
+\alpha_{t}^{R}(s,a)  &  =\frac{Cov_{t-1}(Q_{\pi^{*}}(s,a),\sum_{a^{\prime}}%
+\pi_{t-1}(a^{\prime}|s_{t})Q_{\pi^{*}}(s_{t},a^{\prime}))}{Var_{t-1}(
+\sum_{a^{\prime}}\pi_{t-1}(a^{\prime}|s_{t})Q_{\pi^{*}}(s_{t},a^{\prime
+})+\varepsilon_{t}^{R})}\\
+&  =\sum_{a^{\prime}}\pi_{t-1}(a^{\prime}|s_{t})\frac{Cov(Q_{\pi^{*}%
+}(s,a),Q_{\pi^{*}}(s_{t},a^{\prime}))}{\Sigma_{V,t-1}(s_{t}) + \sigma
+_{\eta^{R},t}^{2}}%
+\end{align*}
+
+
+Similarly, posterior variances and etc. of $Q_{\pi}^{\ast}(s,a)$ update as
+well at all $(s,a)$ pairs.
+
+Cost of reasoning is the reduction of uncertainty (at optimal reasoning)
+\[
+c_{t-1/t}(s_{t})\equiv\kappa\ln\left(  \frac{\Sigma_{V,t-1}(s_{t})}%
+{\Sigma_{V,t} (s_{t})}\right)
+\]
+By optimal reasoning this is only a function of previous uncertainty,
+evaluated at current state%
+
+\[
+c_{t-1}(s_{t})=
+\begin{cases}
+\kappa\ln(\frac{\Sigma_{V,t-1}(s_{t})}{\kappa}) & \text{ , if } {\Sigma
+}_{V,t-1}(s_{t}) > \kappa.\\
+0 & \text{ , if } {\Sigma}_{V,t-1}(s_{t}) \leq\kappa.
+\end{cases}
+\]
+
+
+Therefore experienced reward at any time $t$ is
+\[
+r(s_{t},a_{t})\equiv u(s_{t},a_{t})-c(s_{t})
+\]
+where $u(s_{t},a_{t})$ might be physical utility.
+
+\subsubsection{Model-free learning}
+
+Each period the agent also observes the utility he just experienced at the end
+of last period, $u(s_{t-1},a_{t-1})$. He can use that observed flow utility
+value to update beliefs about $Q_{\pi^{*}}(s,a)$ as well. We think of this
+learning ``by experience'' as free, so it will not be subject to a cognitive
+cost. Still, it is limited as we can see below.
+
+It is most intuitive to write this ``experience'' signal as
+\[
+\eta_{t}^{Q} = r(s_{t-1}, a_{t-1}) + \beta\sum_{a} \sum_{s_{t}} \pi
+_{t-1}^{greedy} (a |s_{t}) \widehat Q_{t-1}(s_{t},a) F(s_{t} | s_{t-1})
+\]
+where $F(s_{t} | s_{t-1})$ is the law of motion for the state (that could also
+depend on the choice $a_{t-1}$, but for simplicity we suppress this notation).
+So the signal $\eta_{t}^{Q}$ is sort of like the expected value of $Q(s_{t-1},
+a_{t-1})$ from the perspective of time $t-1$. Note: we use the greedy policy
+because we're learning about the (unknown) Q-value derived under the (unknown)
+greedy policy.
+
+The new ``information'' is in the fact that we will now impose the Q-value equation%
+
+\[
+Q_{\pi^{*}}(s_{t},a_{t})=r(s_{t},a_{t})+\beta E_{t}Q_{\pi^{*}} (s_{t+1}%
+,\pi^{*}(s_{t+1}))
+\]
+which up to this point the agent has never used directly (only abstractly, in
+reduced form in the noisy signals $\eta_{\eta^{R},t}$. Important: we do not
+assume this equation is in the agent's information set. Assuming knowledge of
+this equation automatically means we are assuming the agent knows $Q_{\pi^{*}%
+}(s,a)$, since the optimal value function is defined by that equation and is
+just a direct one-to-one map from it.
+
+Note: we can just rewrite that as something that makes explicit the greedy
+policy
+\[
+Q_{\pi^{*}}(s_{t},a_{t})=r(s_{t},a_{t})+\beta E_{t}\max_{a^{\prime}}Q_{\pi
+^{*}}(s_{t+1},a^{\prime})
+\]
+
+
+So we are not going to give the agent full knowledge of this equation, we'll
+just let it use once in a way. Specifically, we will use it to express the
+experience signal as%
+
+\begin{align*}
+\eta_{t}^{Q} = u(s_{t-1}, a_{t-1})  &  = r(s_{t-1}, a_{t-1}) + \beta\sum_{a}
+\sum_{s_{t}} \pi_{t-1}^{greedy} (a |s_{t}) \widehat Q_{t-1}(s_{t},a) F(s_{t} |
+s_{t-1})\\
+&  = Q^{*}(s_{t-1}, a_{t-1}) + \beta\sum_{a} \sum_{s_{t}} \pi_{t-1}^{greedy}
+(a |s_{t}) F(s_{t} | s_{t-1}) \left(  \widehat Q_{t-1}(s_{t},a) - Q_{\pi^{*}%
+}(s_{t}, a) \right)
+\end{align*}
+
+
+The agent uses that to update beliefs {\small
+\[
+\hspace{-1cm} \widehat{Q}_{t}(s,a)=\widehat{Q}_{t-1}(s,a)+\alpha_{t}%
+^{Q}(s,a)\left[  \eta_{t}^{Q}- \widehat{Q}_{t-1} (s_{t-1},a_{t-1}) \right]
+\]
+}
+
+where%
+
+\[
+\alpha_{t}^{Q}(s,a) = \frac{ Cov_{t-1}( \eta_{t}^{Q}, Q^{*}(s,a))}{Var_{t-1}(
+\eta_{t}^{Q})}
+\]
+with
+\begin{align*}
+\hspace{-1cm} Cov_{t-1}( \eta_{t}^{Q}, Q^{*}(s,a))  &  = Cov_{t-1}(
+Q^{*}(s_{t-1}, a_{t-1}) - \beta\sum_{a} \sum_{s} \pi_{t-1}^{greedy}(a |s_{t})
+F(s_{t}| s_{t-1}) Q^{*}(s_{t},a_{t}), Q^{*}(s,a))\\
+&  = Cov_{t-1}( Q^{*}(s_{t-1}, a_{t-1}), Q^{*}(s,a)) - \beta\sum_{a} \sum_{s}
+\pi_{t-1}^{greedy}(a |s_{t}) F(s_{t}| s_{t-1}) Cov_{t-1}(Q^{*}(s_{t},a_{t}),
+Q^{*}(s,a))\\
+\end{align*}
+
+
+The key is that at this step, when we compute the signal-to-noise ratio, we DO
+NOT impose the Q-value equation \emph{again}, because this would imply%
+
+\[
+Q^{*}(s_{t-1}, a_{t-1}) - \beta\sum_{a} \sum_{s} \pi_{t-1}^{greedy}(a |s_{t})
+f(s_{t}| s_{t-1}) Q^{*}(s_{t},a_{t}) = r(s_{s-1}, a_{t-1}),
+\]
+which is a known constant in the information set. By not imposing knowledge of
+that equation again, and computing the signal-to-noise ratio by simply
+evaluating the above covariances under the $t-1$ information set as
+recursively defined is like doing only a one step update based on the Qvalue
+equation, but not an infinite update. And this makes sense -- infinitely
+iterating forward on the Bellman equation is solving it. We want to impose a
+cost on solving it, so any deliberate iteration and attempts to solve the
+Bellman equation only come through the costly signals $\eta_{t}^{R}$. \bigskip
+
+\section{Joint actions and reasoning choices}
+
+Conditional on a realized $s_{t}$, the objective function of the agent is to
+choose an action policy $\pi(a|s_{t})$ and reasoning choices over signals
+$\eta_{t}$, resulting in posterior variance of beliefs $\tilde\Sigma_{t}$, to maximize%
+
+\[
+\max_{\pi(a|s_{t}), \Sigma_{t}} \sum_{a}\widehat{Q}_{t}(a,s_{t})\pi
+(a|s_{t})-w\sum_{a}\widetilde\sigma_{t}^{2}(a,s_{t})- \frac{\kappa}{2}
+\ln\left[  \frac{| \Sigma_{t-1}(a,a^{\prime};s_{t})|}{|\widetilde\Sigma
+_{t}(a,a^{\prime};s_{t} )|}\right]
+\]
+subject to two constraints
+\begin{align*}
+\sum_{a}\pi(a|s_{t})  &  =1\\
+\underbrace{-\sum_{a}\ln(\pi(a|s_{t}))\pi(a|s_{t})}_{\equiv H_{\pi}(s_{t})}
+&  \geq h\sum_{a}\widetilde\sigma_{t}^{2}(a,s_{t})
+\end{align*}
+where
+
+\begin{itemize}
+
+
+\item[--] $\Sigma_{t-1}(a,a^{\prime}; s_{t}) = Var(Q^{*}(a,s_{t}) |
+\mathcal{I}_{t-1})$ is the beginning of period $t$ variance that agents
+perceive over the vector $Q^{*}(a,s_{t})$ at a given $s_{t}$ (it is a vector
+due to the vector of possible actions $a$), which variance is conditional on
+the end of period $t-1$ information set $\mathcal{I}_{t-1}$. 
+
+\item[--] $\widetilde\Sigma_{t}(a,a^{\prime};s_{t}) = \Sigma_{t-1}(a,
+a^{\prime}; s_{t} | \eta_{t}) = Var(Q^{*}(a,s_{t})| \mathcal{I}_{t-1},
+\eta_{t})$ is the posterior variance conditional on the time $t-1$ information
+set $\mathcal{I}_{t-1}$ and also the new signals $\eta_{t}$. Note, this is not
+the end-of-period $t$ posterior variance $\Sigma_{t}(a,a^{\prime}; s_{t})$
+because at the end of the period you also receive and updated based on the
+experience signal (discussed below). 
+
+\item[--] $\widetilde\sigma_{t}^{2}(a,s)$ is the diagonal entry of
+$\Sigma_{t-1}(a,a^{\prime};s_{t} | \eta_{t})$ corresponding to the position of
+action $a$. 
+
+\item[--] $H_{\pi}(s_{t}) \equiv-\sum_{a}\ln(\pi(a|s_{t}))\pi(a|s_{t})$ is
+entropy of the actions  distribution, conditional on a state $s_{t}.$
+\end{itemize}
+
+This objective function captures:
+
+\begin{itemize}
+\item benefit of exploitation (greediness): incentive to choose the action
+with highest expected value, through the linear term $\sum_{a}\widehat{Q}%
+_{t}(a,s)\pi(a|s)$
+
+\item possible disutility cost of uncertainty over the values associated to
+each action (the term $w \sum_{a} \widetilde\sigma_{t}^{2}(a,s_{t}))$.
+Essentially, a direct cost of cognitive dissonance, when $w>0.$ This component
+going through $w$ allows us to have a benefit of reasoning that is separate
+from the exploitation-experimentation tradeoff below.
+
+\item constant marginal cost of cognitive reasoning, when $\kappa>0.$ Note:
+
+\begin{itemize}
+\item we do not model reasoning as a fixed capacity, but as a continuous choice
+
+\item The term $\frac{1}{2} \ln\left[  \frac{|\Sigma_{t-1}(a,a^{\prime}%
+;s_{t})|}{|\widetilde\Sigma_{t}(a,a^{\prime};s_{t} )|}\right] $ in the
+objective function is the information content of the signals $\eta_{t}$,
+measured in entropy -- i.e. that is the reduction in entropy after observing
+the vector of signals $\eta_{t}$.
+\end{itemize}
+
+\item The first constraint essentially constraints $\pi(a|s_{t})$ to be proper
+probability distribution (it will be associated with a Lagrange multiplier
+$\lambda>0)$
+
+\item The second constraint is an entropy regularization and its aim is to
+capture the desire for exploration/experimentation. That is, as long as the
+value function $Q^{*}(s,a)$ is uncertainty, there is a desire to experiment
+and explore the function in other parts of the state space (exploration is
+valuable here because of the model free signal agents get each period, for
+free). We model this desire to experiment along the idea of ``entropy
+regularization'' from ML literature, which essentially requires the entropy of
+the action distribution to be bigger than some minimum threshold, thus
+ensuring randomization.
+
+Nevertheless, we recognize that there is only reason to experiment to the
+extent to which the value function is uncertainty -- if $Q^{*}(a,s_{t})$ was
+known, then there is no point to experimenting as there is nothing to learn.
+Hence, we make the lower bound on the entropy of the action distribution
+$H_{\pi}(s_{t})$ proportional to the remaining uncertainty over $Q^{*}%
+(a,s_{t})$, measured by $\sum_{a}\sigma_{t}^{2}(a,s_{t})$.
+\end{itemize}
+
+\bigskip
+
+With the LMs, objective is
+\begin{align*}
+&  \max_{\pi_{t}(a|s_{t}), \widetilde\Sigma_{t}}\sum_{a}\widehat{Q}%
+_{t}(a,s_{t})\pi(a|s_{t})-w\sum_{a}\widetilde\sigma_{t}^{2}(a,s_{t})-
+\frac{\kappa}{2} \ln\left[  \frac{|\Sigma_{t-1}(a,a^{\prime};s_{t}%
+)|}{|\widetilde\Sigma_{t}(a,a^{\prime};s_{t} )|}\right] \\
+&  +\delta_{t}\left[  -h\sum_{a}\widetilde\sigma_{t}^{2}(a,s_{t})-\sum_{a}%
+\ln(\pi(a|s_{t}))\pi(a|s_{t})\right]  +\lambda_{t}(\sum_{a}\pi(a|s)-1)
+\end{align*}
+
+
+\begin{itemize}
+\item \textbf{Optimal actions}. The optimal policy $\pi(a|s_{t})$ looks like a
+softmax, with a state-dependent temperature%
+\begin{align*}
+\widehat{\pi}(a|s_{t}) =
+\begin{cases}
+\frac{\exp(\frac{\widehat{Q}_{t}(a,s_{t})}{\delta_{t}} )}{\sum_{a}\exp
+(\frac{\widehat{Q}_{t}(a,s_{t})}{\delta_{t}})} & \text{ if } {\delta}_{t}>0\\
+\widehat{\pi}^{greedy}(a|s_{t}) & \text{ if } {\delta}_{t}=0
+\end{cases}
+\end{align*}
+
+
+where $\widehat\pi^{greedy}(a|s_{t})$ is the degenerate policy with
+probability 1 on $\arg\max Q(s_{t},a)$.
+
+To finding ${\delta}_{t}>0,$ plug in this expression into the constraint and
+solve given the optimal info choice (which we characterize below)
+\[
+\sum_{a}\ln(\frac{\exp(\frac{\widehat{Q}_{t}(a,s)}{\widehat{\delta}_{t}}%
+)}{\sum_{a}\exp(\frac{\widehat{Q}_{t}(a,s)}{\widehat{\delta}_{t}})})\frac
+{\exp(\frac{\widehat{Q}_{t}(a,s)}{\widehat{\delta}_{t}})}{\sum_{a}\exp
+(\frac{\widehat{Q}_{t}(a,s)}{\widehat{\delta}_{t}})}=h\sum_{a}\widetilde
+{\sigma}_{t}^{2}(a,s)
+\]
+
+\end{itemize}
+
+\textbf{Limit under }$\kappa=0.$ To get some intuition, it is useful to
+consider the limit of costless reasoning $\kappa= 0.$ Formally, the objective
+becomes {\small
+\[
+\max_{\pi_{t}(a|s_{t}), \Sigma_{t} }\sum_{a}\widehat{Q}_{t}(a,s_{t}%
+)\pi(a|s_{t})-w\sum_{a}\widetilde\sigma_{t}^{2}(a,s_{t})+\delta_{t}\left[
+-h\sum_{a}\widetilde\sigma_{t}^{2}(a,s_{t})-\sum_{a}\ln(\pi(a|s_{t}%
+))\pi(a|s_{t})\right]  +\lambda_{t}(\sum_{a}\pi(a|s_{t})-1)
+\]
+}
+
+Given costless reasoning, we will have $\widetilde\sigma_{t}^{2}(a,s_{t})=0.$
+In this case, the entropy regularization constraint will not bind. So
+$\delta_{t}=0$ and the optimal action follows the usual greedy policy. Further
+note that $\widetilde\sigma_{t}^{2}(a,s_{t})=0$ means the agent knows the
+$Q(a,s_{t})$ associated to each action, conditional on current state $s_{t}$
+and conditional on following the optimal policy from now on. Thus in this
+limit agent knows $Q_{\pi^{\ast}}(a, s)$ and we can replace%
+\[
+\widehat{Q}_{t}(a,s)=Q_{\pi^{\ast}}(a,s )
+\]
+Objective then is%
+\[
+\max_{\pi_{t}(a|s_{t})}\sum_{a}Q_{\pi^{\ast}}(a, s_{t})\pi(a|s_{t}%
+)+\lambda_{t} (\sum_{a}\pi(a|s_{t})-1)
+\]
+which is exactly the problem solved under full rationality in the first
+place:
+\begin{align*}
+\max_{a_{t}}Q_{\pi^{\ast}}(a_{t}, s_{t})  &  =\max_{a_{t}}\left[  u(a_{t},
+s_{t})+\beta E_{t}\max_{a^{\prime}}Q_{\pi^{\ast}}(a^{\prime}, s_{t+1})\right]
+\\
+\pi^{\ast}(a|s)  &  =\pi^{greedy}(a|s)
+\end{align*}
+
+
+So, in the limit where the agent learns fully, we are back to the full
+information problem as expected.
+
+\begin{itemize}
+
+
+\item \textbf{Reasoning choice.} The agent learns about the full-information
+$Q_{\pi^{\ast}}(a, s).$  The agent has can generate reasoning signals
+$\eta_{t}$ that are unrestricted linear functions of the underlying
+$Q_{\pi^{*}}(a,s_{t})$
+\[
+\eta_{t} = V_{t}^{\prime}Q_{\pi^{*}}(a,s_{t}) + \varepsilon_{\eta,t}
+\]
+where $\varepsilon_{\eta,t} \sim N( 0, \Sigma_{\eta,t})$. The agents freely
+decide on the structure of $V_{t}$ and the noise variance matrix $\Sigma
+_{\eta,t}$, with only imposing the normalization that the columns of $V_{t}$
+have a norm of 1.
+
+Using the following two properties of eigenvalues,%
+
+\[
+tr(\Sigma_{t}(a,a^{\prime}; s_{t})) = \sum_{i} \lambda_{t}^{(i)}
+\]
+%
+\[
+|\Sigma_{t}(a,a^{\prime}; s_{t})| = \prod_{i} \lambda_{t}^{(i)}
+\]
+where $\lambda_{t}^{(i)}$ are the eigenvalues of $\widetilde\Sigma
+_{t}(a,a^{\prime}; s_{t}),$ we can rewrite the objective function as
+\begin{align*}
+&  \max_{\pi_{t}(a|s_{t}), \Sigma_{t}}\sum_{a}\widehat{Q}_{t} (a,s_{t}%
+)\pi(a|s_{t})-w\sum_{i} \lambda_{t}^{(i)} - \frac{\kappa}{2}\ln\left[
+\ln(|\Sigma_{t-1}(a,a^{\prime};s_{t})|) - \sum_{i} \ln( \lambda_{t}^{(i)})
+\right] \\
+&  +\delta_{t}\left[  -h\sum_{i} \lambda_{t}^{(i)} -\sum_{a}\ln(\pi
+(a|s_{t}))\pi(a|s_{t})\right]  +\lambda_{t}(\sum_{a}\pi(a|s)-1)
+\end{align*}
+
+
+The FOCs are%
+
+\[
+\lambda_{t}^{(i)} = \frac{\kappa}{w + \delta_{t} h}%
+\]
+
+
+Thus, we can see the interaction between actions and reasoning -- there is an
+incentive to reason more when the LM $\delta_{t}$ is larger, when you would
+value relaxing the  constraint on greedines induced by experimentation. The
+agent can relax that  constraint by reducing uncertainy. Intuitively, the
+agent values the reduction in uncertainty because that allows it to exploit
+$\widehat Q_{t}(a,s_{t})$ more, in the sense of selecting an action closer to
+its argmax.
+
+Also, the above manipulations show that the solution to $\delta_{t}$ should
+satisfy
+\[
+\sum_{a}\ln(\frac{\exp(\frac{\widehat{Q}_{t}(a,s)}{\widehat{\delta}_{t}}
+)}{\sum_{a}\exp(\frac{\widehat{Q}_{t}(a,s)}{\widehat{\delta}_{t}})})\frac
+{\exp(\frac{\widehat{Q}_{t}(a,s)}{\widehat{\delta}_{t}})}{\sum_{a}\exp
+(\frac{\widehat{Q}_{t}(a,s)}{\widehat{\delta}_{t}})}= h \sum_{i} \lambda
+_{t}^{(i)}
+\]
+
+
+Without loss of generality, we can assume that $\lambda_{t}^{(i)}$ are sorted
+in descending order so%
+
+\[
+\lambda_{t}^{(1)} \geq\lambda_{t}^{(2)} \geq... \geq\lambda_{t}^{(N)}
+\]
+
+
+Importantly, by standard properties of variance matrices and conditional
+variances, since $\Sigma_{\eta}$ is positive definite by assumption, the
+(sorted) eigenvalues of $\Sigma_{t}(a,a^{\prime}; s_{t})$ must be weakly
+smaller than those of the prior variance $\Sigma_{t-1}(a,a^{\prime};s_{t})$.
+Essentially, this is the ``no forgetting'' constraint from our univariate
+case, and it implies that%
+
+\[
+\lambda_{t}^{(i)} \leq\lambda_{t-1}^{(i)}
+\]
+
+
+So imposing the no-forgetting constraint we see that the optimal information
+choice over the structure and variances of the signals $\eta_{t}$ must be such that%
+
+\[
+\lambda_{t}^{(i)} = \min\{ \frac{\kappa}{w + \delta_{t} h}, \lambda
+_{t-1}^{(i)} \}
+\]
+
+
+Hence, agents want to only reduce eigenvalues that are already bigger than
+$\kappa$. But any information flow that reduces any of the eigenvalues that
+already below $\kappa$ is inefficient. Hence, the optimal signal structure is
+for $V_{t}$ to be the matrix of eigenvectors of the prior variance
+$\Sigma_{t-1}(a,a^{\prime}; s_{t})$, and $\Sigma_{\eta,t}$ to be a diagonal
+matrix with diagonal entries $\sigma_{i,t}^{2}$ where%
+
+\[
+\sigma_{i,t}^{2} =
+\begin{cases}
+\frac{\kappa\lambda_{t-1}^{(i)}}{ \lambda_{t-1}^{(i)} - \kappa}, & \text{if }
+\lambda_{t}^{(i)} > \kappa\\
+\infty, & \text{if } \lambda_{t}^{(i)} \leq\kappa
+\end{cases}
+\]
+
+
+Typically, the eigenvalues are declining in value quickly, so only a few of
+these signals will have non-infinite noise variance. Moreover the update form
+$\lambda_{t-1}^{(i)}$ to $\lambda_{t}^{(i)}$ is straightforward because it is
+an update over orthogonal normal variables with a vector of orthogonal signals.
+\end{itemize}
+
+\paragraph{ End of period $t$ -- Model Free learning.}
+
+The above joint solution produces optimal reasoning signals $\eta_{t}$, and
+after observing those signals and following the optimal policy function
+$\widehat\pi(a|s_{t})$, also a realized action $a_{t}$. Given that action, at
+the end of the period the agent observes realized utility $u(s_{t}, a_{t})$.
+This knowledge implies an ``experience'' or model-free learning signal
+{\small
+\begin{align*}
+\eta_{t}^{Q}  &  =u(s_{t},a_{t})+\beta\sum_{a}\sum_{s_{t+1}}\pi_{t}%
+^{greedy}(a|s_{t+1})\widehat{Q}_{t}(s_{t+1},a)F(s_{t+1}|s_{t})\\
+&  =u(s_{t},a_{t})+\beta\sum_{a}\sum_{s_{t+1}}\left[  \pi_{t} ^{greedy}%
+(a|s_{t+1})\widehat{Q}_{t}(s_{t+1},a)+\pi^{\ast}(a|s_{t+1})Q_{\pi^{\ast}
+}(s_{t+1},a)-\pi^{\ast}(a|s_{t+1})Q_{\pi^{\ast}}(s_{t+1},a)\right]  F(s_{t+1}
+|s_{t})\\
+&  =Q^{\ast}(s_{t},a_{t})+\beta\sum_{a}\sum_{s_{t+1}}\left[  \pi_{t}%
+^{greedy}(a|s_{t+1})\widehat{Q}_{t}(s_{t+1},a)-\pi^{\ast}(a|s_{t+1}
+)Q_{\pi^{\ast}}(s_{t+1},a)\right]  F(s_{t+1}|s_{t})
+\end{align*}
+} where $\pi_{t}^{greedy}(a|s_{t+1}) = \arg\max_{a} \widehat Q_{t}(s_{t+1}%
+,a)$. Because the greedy policies are degenerate, the last line simplifies to%
+\[
+\eta_{t}^{Q}=Q^{\ast}(s_{t},a_{t})+\beta\sum_{s_{t+1}}\left[  \widehat{Q}%
+_{t}(s_{t+1}, \pi_{t}^{greedy}(a|s_{t+1}) )- Q_{\pi^{\ast}}(s_{t+1},\pi^{\ast
+}(a|s_{t+1}))\right]  F(s_{t+1}|s_{t})
+\]
+
+
+The agent has beliefs about $Q_{\pi^{\ast}}(s_{t},a)$ for all actions $a$ but
+does not know $\pi^{\ast}(a|s_{t+1})$. To start with, let us approximate by
+setting $\pi^{\ast}(a|s_{t+1})=\pi_{t}^{greedy}(a|s_{t+1})$
+\[
+\eta_{t}^{Q}=Q^{\ast}(s_{t},a_{t})+\beta\sum_{s_{t+1}}\left[  \widehat{Q}%
+_{t}(s_{t+1}, \pi_{t}^{greedy}(a|s_{t+1}) )- Q_{\pi^{\ast}}(s_{t+1}, \pi
+_{t}^{greedy}(a|s_{t+1}) )\right]  F(s_{t+1}|s_{t})
+\]
+and use this signal to update beliefs about $Q(s,a)$ as per formulas above.
+Note: the approximation $\pi^{\ast}(a|s_{t})=\pi_{t-1}^{greedy}(a|s_{t})$
+introduces another layer of noise, which we could potentially add in the
+future, but for now let's ignore it.
+
+Using this signal, we update the beliefs of the agent one last time to obtain
+the end of period $t$ beliefs, after both active deliberation and experiential learning.
+
+\section{Application: firms' investment}
+
+Consider a firm $j^{\prime}$s investment problem. Starts the period with some
+capital $k_{j,t}.$ Budget constraint says dividends equal
+\[
+d_{j,t}=z_{j,t}k_{j,t}^{\alpha}+i_{j,t}\left[  1-\phi(i_{j,t},k_{j,t})\right]
+\]
+where $z_{j,t}k_{j,t}^{\alpha}$ is output of firm, $z_{j,t}$ is a technology
+shock,  $i_{j,t}$ is investment and $\phi(i_{j,t},k_{j,t})$ could be some
+investment adjustment costs. For example, it might be the usual $i/k$ form:%
+\[
+\phi(i_{j,t},k_{j,t})=\varkappa\frac{i_{j,t}}{k_{j,t}}%
+\]
+Capital accumulation:
+\[
+k_{j,t+1}=(1-\delta)k_{j,t}+i_{j,t}%
+\]
+and a law of motion for technology $F(z_{j,t+1}|z_{j,t}),$ for example an
+AR(1). 
+
+Firm's problem is
+\[
+V(k_{j,t},z_{j,t})=\max_{i_{j,t}}\left[  u(d_{j,t})+\beta E_{t}V(k_{j,t+1}%
+,z_{j,t+1})\right]
+\]
+where $u(d_{j,t})$ is current payoff function, over dividends. We can have
+linear or concave $u(.),$ for example $u(d)=\log(d).$
+
+For now, we make entry and exit completely exogenous. With some probability
+$\gamma,$ an individual firm $j$ exits the economy. In particular, a new firm
+replaces it. The new firm will have some time-zero prior beliefs over the
+objects defined in previous sections (and further below), and have some
+starting capital $k_{j,0}=k_{0}.$ We will endogenize at some point more the
+entry and exit decisions. 
+
+Because all firms will solve separately their problem there is no need to keep
+track of the $j$ index for what follows. 
+
+Call the firm's state $s_{t}=\left(  k_{t},z_{t}\right)  .$ We would then need
+to: 
+
+1. solve for the fully rational policy function $i^{\ast}(s_{t}).$ 
+
+2. Implement our learning model, as described above. Recall the optimal
+Q-function, where the action is now investment
+\[
+Q_{i^{\ast}}(s_{t},i_{t})=r(s_{t},i_{t})+\beta E_{t}Q_{i^{\ast}}%
+(s_{t+1},i^{\ast}(s_{t+1}))
+\]
+where $r(s_{t},i_{t})=u\left(  z_{t}k_{t}^{\alpha}+i_{t}-\phi(i_{t}%
+,k_{t})\right)  .$ The agent will learn about the optimal Q-value function
+$Q_{\pi^{\ast}}(s,i)$ defined above.
+
+\bigskip
+
+To start with we could even make it simpler, but shutting down stochastic
+shock $z_{t}.$ Instead it's entirely about transitional dynamics, through the
+endogenous state $k_{t}.$
+\end{document}
