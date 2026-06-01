@@ -1,0 +1,74 @@
+\section{Proofs}
+
+The following section contains the proofs of all propositions stated in the main text.
+
+\subsection{Proof of \ref{prop:debt_separation}} \label{app:proof:debt_separation}
+\begin{proof}
+Starting from the firm's original bellman equation $\mathbf{s_t} = (z, k, b)$, including the presence
+of debt, we have:
+$V(z, k, b) = \max_{k', b'} \{d(z, k, k', b, b') + \beta\, \mathbb{E}_{z'}[V(z', k', b')]\}$, 
+subject to $b' \leq \theta k'$. We then conjecture that the value function is additively 
+separable: $V(z, k, b) = V^K(z, k) + V^B(b)$, where $V^B(b) = -(1+R)b$. 
+Substituting into the original Bellman equation yields:
+\begin{align}
+V^K(z, k) - (1+R)b &= \max_{k', b'} \left\{ z k^\alpha - k' + b' - (1+R)b 
++ \beta \mathbb{E}_{z'}\left[V^K(z', k') - (1+R)b'\right] \right\} \\
+V^K(z, k) &= \max_{k', b'} \left\{ z k^\alpha - k' + b'
++ \beta \mathbb{E}_{z'}\left[V^K(z', k')\right] - \beta(1+R)b' \right\} \\
+V^K(z, k) &= \max_{k', b'} \left\{ z k^\alpha - k' + b'[1 - \beta(1+R)] 
++ \beta \mathbb{E}_{z'}\left[V^K(z', k')\right] \right\}
+\end{align}
+Since $b'$ enters linearly, the solution is $b' = \theta k'$ when 
+$\beta(1+R) \leq 1$ and $b' = 0$ otherwise, verifying the conjecture.
+\end{proof}
+
+\subsection{Proof of \ref{prop:reasoning_lower_bound_on_exploration}}
+\label{app:proof:reasoning_lower_bound_on_exploration}
+\begin{proof}
+Let $\Sigma_E$ and $\Sigma_R$ denote the covariance kernel functions of the experience 
+update and the reasoning mechanism, respectively. By Mercer's theorem, the experience 
+kernel can be expressed as an infinite sum of eigenfunctions and eigenvalues:
+\begin{equation}
+\Sigma_E(x, x') = \sum_{i=1}^{\infty} \lambda_i^E \phi_i^E(x) \phi_i^E(x')
+\end{equation}
+Where $\{\lambda_i^E\}_{i=1}^{\infty}$ are the eigenvalues of the experience kernel, and $\{\phi_i^E\}_{i=1}^{\infty}$ are the corresponding orthonormal eigenfunctions. Since $\Sigma_E$ is a trace-class operator, we have $\text{Tr}(\Sigma_E) = \sum_{i=1}^{\infty} \lambda_i^E < \infty$.
+By the reasoning-based update definition (\ref{def:reasoning_learning_update}), there 
+exists a direct relationship between the eigenvalues of the experience update and 
+the reasoning mechanism:
+\begin{equation}
+\lambda_i^R = \min\left\{\lambda_i^E, \frac{\kappa}{H \cdot \delta_E}\right\}, \quad \forall i.
+\end{equation}
+This implies that the reasoning mechanism's covariance kernel can be expressed as:
+\begin{equation}
+\Sigma_R(x, x') = \sum_{i=1}^{\infty} \min\left\{\lambda_i^E, \frac{\kappa}{H \cdot \delta_E}\right\} \phi_i^E(x) \phi_i^E(x').
+\end{equation}
+Which, in turn, also implies $\text{Tr}(\Sigma_R) \leq \text{Tr}(\Sigma_E) < \infty$ for any $\kappa > 0$.
+Consequently, the total posterior uncertainty is given by the trace of the operator:
+\begin{equation}
+\text{Tr}(\Sigma_R) = \sum_{i=1}^{\infty} \min\left\{\lambda_i^E, \frac{\kappa}{H \cdot \delta_E}\right\} < \infty.
+\end{equation}
+Taking the derivative of the total posterior uncertainty with respect to the reasoning cost $\kappa$ yields:
+\begin{equation}
+\frac{\partial \text{Tr}(\Sigma_R)}{\partial \kappa} = \frac{1}{H \cdot \delta_E} \sum_{i=1}^{\infty} \mathbb{1}_{\left\{\lambda_i^E > \frac{\kappa}{H \cdot \delta_E}\right\}} \geq 0.
+\end{equation}
+This implies that for any $\kappa_2 > \kappa_1 > 0$, we have $\text{Tr}(\Sigma_R(\kappa_2)) \geq \text{Tr}(\Sigma_R(\kappa_1))$.
+Since the expected payoff $\mathbb{E}_\pi[\hat{Q}(c, s_t)]$ is strictly increasing in 
+policy precision, the entropy constraint $\mathcal{H}(\pi_t) \geq H \cdot \text{Tr}(\Sigma_R)$ 
+is locally non-satiated. By complementary slackness, the constraint binds at the optimum, 
+and the exploration floor is attained:
+\begin{equation}
+\underline{\mathcal{H}}(\kappa) \equiv \inf_{\pi_t} \mathcal{H}(\pi_t) = H \cdot \text{Tr}(\Sigma_R) = H \sum_{i=1}^{\infty} \min\left\{\lambda_i^E, \frac{\kappa}{H \cdot \delta_E}\right\} > 0.
+\end{equation}
+Taking the partial derivative with respect to the cognitive cost $\kappa$ yields:
+\begin{equation}
+\frac{\partial \underline{\mathcal{H}}}{\partial \kappa} = \frac{1}{\delta_E} \sum_{i=1}^{\infty} \mathbb{1}_{\left\{\lambda_i^E > \frac{\kappa}{H \cdot \delta_E}\right\}} > 0.
+\end{equation}
+The strict positivity holds for any $\kappa < \bar{\kappa} = H \cdot \delta_E \cdot \sup_i \lambda_i^E$, 
+since at least one eigenvalue exceeds the water level $\kappa/(H \cdot \delta_E)$. 
+It follows that for any $\bar{\kappa} > \kappa_2 > \kappa_1 > 0$:
+\begin{equation}
+\underline{\mathcal{H}}(\kappa_2) > \underline{\mathcal{H}}(\kappa_1),
+\end{equation}
+establishing that the minimum achievable policy entropy is strictly increasing 
+in reasoning costs.
+\end{proof}

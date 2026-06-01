@@ -1,0 +1,55 @@
+\documentclass{working-paper}
+
+\usepackage{pgf, pgfplots}
+\usepackage{booktabs}
+\newcommand{\mathdefault}[1]{\ensuremath{#1}}
+
+\title{Emergent Firm Heterogeneity Through Learning From Experience and Costly Deliberation}
+\author{Adam Costarino\thanks{Duke University}}
+\date{\today}
+\usepackage{pgf}
+
+\begin{document}
+\begin{titlepage}
+\maketitle
+\begin{abstract}
+We adapt \cite{IlutValchev2023} to a firm investment setting in which firms face
+frictions in learning in a stochastic environment. Firms are modeled as reinforcement 
+learning agents who learn from experience (\textit{model-free} learning) which 
+resembles temporal difference learning, and from planning (\textit{model-based} learning).
+Firms develop investment plans based on imperfect learning from past experience and costly 
+deliberation. Each firm resides in a stochastic environment with idiosyncratic 
+productivity shocks which shape their policy formation. We show that this framework 
+generates a heterogeneous ergodic distribution over firm beliefs and capital stocks. 
+The resulting firm behavior is consistent with several empirical regularities that have 
+individually motivated distinct literatures including lumpy investment dynamics, 
+persistent dispersion in marginal products of capital across observably similar firms, 
+sluggish aggregate investment response to identified shocks, and history-dependent 
+managerial decision-making.
+\end{abstract}
+
+\vspace{1em}
+\vspace{0.5em}
+\setcounter{page}{0}
+\thispagestyle{empty}
+\end{titlepage}
+\clearpage
+\tableofcontents
+\clearpage
+\input{sections/introduction}
+\input{sections/investment_problem}
+\input{sections/simulations}
+\input{sections/properties_of_reasoning_mechanism}
+
+
+\appendix
+\newpage
+
+\input{sections/appendix_a}
+\input{sections/appendix_b}
+\input{sections/appendix_c}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

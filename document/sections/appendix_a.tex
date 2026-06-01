@@ -1,0 +1,305 @@
+\section{Derivations} \label{sec:appendix_a}
+
+\subsection{Derivation of the Canonical Investment Model Solution}
+\label{app:canonical-investment-derivation}
+
+This section derives the optimal investment condition for the firm described in
+Section~\ref{sec:investment_problem}. The firm chooses investment $i_{j,t}$ and
+next-period debt $b_{j,t+1}$ to maximize discounted dividends subject to the
+capital accumulation equation and the collateral borrowing constraint.
+Let $q_{j,t}$ denote the multiplier on the capital accumulation equation and
+$\mu_{j,t}$ the multiplier on the collateral constraint. The Lagrangian is
+
+\begin{align}
+\mathcal{L} = \sum_{t=0}^{\infty} \beta^t \Big[
+& f(z_{j,t},k_{j,t}) - i_{j,t}
+- \frac{\phi}{2}\left(\frac{i_{j,t}}{k_{j,t}}\right)^2 k_{j,t}
++ b_{j,t+1} - (1+r)b_{j,t} \\
+& + q_{j,t}\big((1-\delta)k_{j,t} + i_{j,t} - k_{j,t+1}\big) \\
+& + \mu_{j,t}\big(\theta k_{j,t+1} - b_{j,t+1}\big)
+\Big].
+\end{align}
+
+The first-order condition with respect to investment is
+
+\begin{equation}
+-1 - \phi \frac{i_{j,t}}{k_{j,t}} + q_{j,t} = 0 .
+\end{equation}
+
+Rearranging gives the Tobin's $q$ investment condition
+
+\begin{equation}
+q_{j,t} = 1 + \phi \frac{i_{j,t}}{k_{j,t}} .
+\end{equation}
+
+Solving for the investment rate,
+
+\begin{equation}
+\frac{i_{j,t}}{k_{j,t}} = \frac{1}{\phi}(q_{j,t}-1).
+\end{equation}
+
+Under quadratic adjustment costs, the investment-capital ratio is linear in marginal $q$.
+
+The first-order condition with respect to next-period debt is
+
+\begin{equation}
+1 - \beta(1+r) - \mu_{j,t} = 0 .
+\end{equation}
+
+The first-order condition with respect to next-period capital is
+
+\begin{equation}
+-q_{j,t} + \beta \mathbb{E}_t \Big[
+f_k(z_{j,t+1},k_{j,t+1})
++ (1-\delta) q_{j,t+1}
++ \theta \mu_{j,t+1}
+\Big] = 0 .
+\end{equation}
+
+Rearranging yields the Euler equation for marginal $q$,
+
+\begin{equation}
+q_{j,t} =
+\beta \mathbb{E}_t \Big[
+f_k(z_{j,t+1},k_{j,t+1})
++ (1-\delta) q_{j,t+1}
++ \theta \mu_{j,t+1}
+\Big].
+\end{equation}
+
+The borrowing constraint satisfies the complementary slackness conditions
+
+\begin{align}
+b_{j,t+1} &\le \theta k_{j,t+1} \\
+\mu_{j,t} &\ge 0 \\
+\mu_{j,t}\big(\theta k_{j,t+1} - b_{j,t+1}\big) &= 0 .
+\end{align}
+
+When the constraint is slack ($\mu_{j,t}=0$), the model reduces to the standard
+Tobin's $q$ investment condition. When the constraint binds ($\mu_{j,t}>0$),
+capital carries an additional value because it relaxes the borrowing limit.
+
+\subsection{Derivation of Optimal Action Policy \ref{prop:optimal_policy}}
+
+The agent maximizes expected payoff subject to information and probability constraints:
+\begin{align*}
+    &\max_{\pi_t(\cdot|s_t)} \sum_c \hat{Q}_t(c, s_t) \pi_t(c|s_t) && (\text{Objective Function}) \\
+    \text{s.t. } &-\sum_c \pi_t(c|s_t) \ln \pi_t(c|s_t) \geq \kappa \sum_c \sigma_t(c|s_t) && (\text{Information Constraint}) \\
+    &\sum_c \pi_t(c|s_t) = 1 && (\text{Probability Constraint})
+\end{align*}
+
+The Lagrangian and subsequent First-Order Conditions (FOC) are:
+\begin{align*}
+    \mathcal{L} &= \sum_c \hat{Q}_t(c, s_t) \pi_t(c|s_t) + \delta_t \left[ -\sum_c \pi_t \ln \pi_t - \kappa \sum \sigma \right] + \mu \left[ \sum_c \pi_t - 1 \right] && (\text{Lagrangian}) \\
+    \frac{\partial \mathcal{L}}{\partial \pi_t} &= \hat{Q}_t(c, s_t) - \delta_t \ln \pi_t(c|s_t) - \delta_t + \mu = 0 && (\text{FOC w.r.t. } \pi_t) \\
+    &\implies \ln \pi_t(c|s_t) = \frac{\mu - \delta_t}{\delta_t} + \frac{\hat{Q}_t(c, s_t)}{\delta_t} && (\text{Solve for } \ln \pi_t)
+\end{align*}
+
+Solving for the optimal policy $\pi_t(c|s_t)$:
+\begin{align*}
+    \pi_t(c|s_t) &= \exp \left( \frac{\mu - \delta_t}{\delta_t} \right) \exp \left( \frac{\hat{Q}_t(c, s_t)}{\delta_t} \right) && (\text{Exponentiate}) \\
+    &= A \cdot \exp \left( \frac{\hat{Q}_t(c, s_t)}{\delta_t} \right) && (\text{Let } A = e^{\frac{\mu-\delta_t}{\delta_t}}) \\
+    &= \frac{\exp \left( \frac{\hat{Q}_t(c, s_t)}{\delta_t} \right)}{\sum_{c'} \exp \left( \frac{\hat{Q}_t(c', s_t)}{\delta_t} \right)} && (\text{Normalize via } \sum \pi_t = 1)
+\end{align*}
+
+In the limit where the shadow price of attention $\delta_t \to 0$:
+\begin{equation*}
+    \lim_{\delta_t \to 0} \pi_t(c|s_t) = 
+    \begin{cases} 
+    1 & \text{if } c = \arg\max_{c'} \hat{Q}_t(c', s_t) \\ 
+    0 & \text{otherwise} 
+    \end{cases}
+\end{equation*}
+
+\subsection{Gaussian Process Regression \& Experience Learning} \label{app:gp_regression_equivalence}
+
+The primal update in \ref{def:experience_learning_update} produces
+three objects: $\hat{Q}^E_t$, $\hat{\Sigma}^E_t$, and $\alpha^E_t$. Each
+of these objects is a function over the continuous domain $\mathcal{A} \times \mathcal{S}$.
+To implement the primal form directly, one would need to evaluate and store
+$\hat{Q}^E_t(\mathbf{a}, \mathbf{s})$ at every point in the action-state space,
+which is uncountably infinite. In the code, we instead immplement a GP regression which
+sidesteps this issue by storing not the updated functions themselves, but the finite collection
+of data from which those functions can be reconstructed at any query point on demand.
+
+\paragraph{From $t = 1$.} In the first period, the agent has some prior $Q^*_0 \sim GP(\mu, k)$
+they start in state $\mathbf{s}_0$ and land in state $\mathbf{s}_1$ after taking actions $\mathbf{a}_0$.
+They observe a noisy signal, their utility from that action in that state, which is 
+a noisy observation of the linear functional $Q^*(\mathbf{a}_0, \mathbf{s}_0) - Q^*(\mathbf{a}_1, \mathbf{s}_1) = \eta^E_1 - \varepsilon_1$.
+The noise comes from the stochastic transition. As a result, $\delta_1$, the temporal difference
+error, is a noisy signal of the linear functional $Q^*(\mathbf{a}_0, \mathbf{s}_0) - \beta Q^*(\mathbf{a}_1, \mathbf{s}_1)$.
+By the linearity of covariance.
+\begin{align}
+    \operatorname{Cov}(\delta_1, Q^*(\mathbf{a}, \mathbf{s})) &= k((\mathbf{a}_0, \mathbf{s}_0), (\mathbf{a}, \mathbf{s})) - \beta k((\mathbf{a}_1, \mathbf{s}_1), (\mathbf{a}, \mathbf{s})) \\
+    \operatorname{Var}(\delta_1) &= k((\mathbf{a}_0, \mathbf{s}_0), (\mathbf{a}_0, \mathbf{s}_0)) + \beta^2 k((\mathbf{a}_1, \mathbf{s}_1), (\mathbf{a}_1, \mathbf{s}_1)) - 2\beta k((\mathbf{a}_0, \mathbf{s}_0), (\mathbf{a}_1, \mathbf{s}_1))
+\end{align}
+Denote $w \equiv \operatorname{Var}(\delta_1)$, the denominator above.
+The posterior mean at any query point $(\mathbf{a}, \mathbf{s})$ then follows directly 
+from \ref{def:experience_learning_update}:
+\begin{equation}
+    \hat{Q}^E_1(\mathbf{a}, \mathbf{s}) 
+    = \mu(\mathbf{a}, \mathbf{s}) 
+    + \alpha^E_1(\mathbf{a}, \mathbf{s}) \cdot \delta_1
+    = \mu(\mathbf{a}, \mathbf{s}) 
+    + \frac{k((\mathbf{a}_0, \mathbf{s}_0), (\mathbf{a}, \mathbf{s})) 
+    - \beta\, k((\mathbf{a}_1, \mathbf{s}_1), (\mathbf{a}, \mathbf{s}))}{w} 
+    \cdot \delta_1
+\end{equation}
+where $\delta_1 = \eta^E_1 + \beta\, \mu(\mathbf{a}_1, \mathbf{s}_1) - \mu(\mathbf{a}_0, \mathbf{s}_0)$
+is the temporal difference error evaluated against the prior mean.
+
+
+After $N$ observations, the dual form maintains four objects. First, two
+$N \times d$ matrices of support points: the \emph{decision points}
+$\mathbf{X}^{\mathrm{dec}} = \{(\mathbf{a}_0, \mathbf{s}_0), \ldots,
+(\mathbf{a}_{N-1}, \mathbf{s}_{N-1})\}$, where actions were taken, and
+the \emph{outcome points}
+$\mathbf{X}^{\mathrm{out}} = \{(\mathbf{a}_1, \mathbf{s}_1), \ldots,
+(\mathbf{a}_N, \mathbf{s}_N)\}$, where the agent landed. Second, the
+$N$-vector of observed utilities
+$\mathbf{Y} = (\eta^E_1, \ldots, \eta^E_N)^\top$. Third, an $N \times N$
+matrix $C^{-1}$, the inverse of the Gram matrix $C$.
+
+\paragraph{Gram matrix.}
+The Gram matrix $C$ is the $N \times N$ matrix whose $(i,j)$ entry is the
+prior covariance between the $i$-th and $j$-th TD functionals:
+\begin{equation}
+    C_{ij} = \operatorname{Cov}(\delta_i, \delta_j)
+    = k(\mathbf{x}^{\mathrm{dec}}_i, \mathbf{x}^{\mathrm{dec}}_j)
+    - \beta\, k(\mathbf{x}^{\mathrm{dec}}_i, \mathbf{x}^{\mathrm{out}}_j)
+    - \beta\, k(\mathbf{x}^{\mathrm{out}}_i, \mathbf{x}^{\mathrm{dec}}_j)
+    + \beta^2\, k(\mathbf{x}^{\mathrm{out}}_i, \mathbf{x}^{\mathrm{out}}_j)
+\end{equation}
+The four-term expansion follows from the bilinearity of covariance applied to
+the linear functional $\delta_i = Q^*(\mathbf{x}^{\mathrm{dec}}_i) -
+\beta\, Q^*(\mathbf{x}^{\mathrm{out}}_i) + \varepsilon_i$. Expanding
+$\operatorname{Cov}(Q^*(\mathbf{x}^{\mathrm{dec}}_i) - \beta\,
+Q^*(\mathbf{x}^{\mathrm{out}}_i),\; Q^*(\mathbf{x}^{\mathrm{dec}}_j) -
+\beta\, Q^*(\mathbf{x}^{\mathrm{out}}_j))$ and using
+$\operatorname{Cov}(Q^*(\mathbf{x}), Q^*(\mathbf{x}')) = k(\mathbf{x},
+\mathbf{x}')$ yields the four kernel evaluations above. Intuitively,
+$C_{ij}$ measures how much the $i$-th and $j$-th temporal difference
+observations tell us about one another under the prior.
+
+\paragraph{Prior TD means.}
+Define the $N$-vector of prior TD means $\mathbf{M}$, whose $i$-th entry
+is the prior expectation of the $i$-th TD functional:
+\begin{equation}
+    M_i = \mu(\mathbf{a}_{i-1}, \mathbf{s}_{i-1})
+    - \beta\, \mu(\mathbf{a}_i, \mathbf{s}_i)
+\end{equation}
+The residual $\mathbf{Y} - \mathbf{M}$ is then the $N$-vector whose $i$-th entry is
+$\eta^E_i - M_i = \eta^E_i - \mu(\mathbf{a}_{i-1}, \mathbf{s}_{i-1})
++ \beta\, \mu(\mathbf{a}_i, \mathbf{s}_i) = \delta_i$, the temporal
+difference error of the $i$-th observation evaluated against the
+\emph{original prior} $\mu$. In the primal (Kalman) form of \ref{def:experience_learning_update}, the
+TD error at step $t$ is evaluated against the current posterior
+mean $\hat{Q}^E_{t-1}$, which has already absorbed all previous
+observations. In the dual form, every residual is evaluated against
+the same unchanging prior $\mu$. The two forms nonetheless yield
+identical posteriors because the inverse Gram matrix $C^{-1}$
+compensates for this difference.
+
+\paragraph{Decorrelation.}
+To reconstruct the posterior at any query point $(\mathbf{a}, \mathbf{s})$,
+we compute the $N$-vector $k_*(\mathbf{a}, \mathbf{s})$ whose
+$i$-th entry is the cross-covariance between the $i$-th TD functional and
+the latent $Q^*$ at the query point:
+\begin{equation}
+    [k_*(\mathbf{a}, \mathbf{s})]_i
+    = k((\mathbf{a}_{i-1}, \mathbf{s}_{i-1}), (\mathbf{a}, \mathbf{s}))
+    - \beta\, k((\mathbf{a}_i, \mathbf{s}_i), (\mathbf{a}, \mathbf{s}))
+\end{equation}
+The posterior mean and variance are then:
+\begin{align}
+    \hat{Q}^E_N(\mathbf{a}, \mathbf{s})
+    &= \mu(\mathbf{a}, \mathbf{s})
+    + \mathbf{k}_*(\mathbf{a}, \mathbf{s})^\top \, C^{-1} \,
+      (\mathbf{Y} - \mathbf{M})
+    \label{eq:dual_mean} \\
+    \hat{\Sigma}^E_N((\mathbf{a}, \mathbf{s}), (\mathbf{a}, \mathbf{s}))
+    &= \sigma^2_0
+    - k_*(\mathbf{a}, \mathbf{s})^\top \, C^{-1} \,
+      k_*(\mathbf{a}, \mathbf{s})
+\end{align}
+$C^{-1}(\mathbf{Y} - \mathbf{M})$ determines how much each past observation
+revises the belief at a query point. $C^{-1}$ performs decorrelation
+simultaneously across all observations. The inverse Gram matrix thus converts the
+naive prior-based residuals $\mathbf{Y} - \mathbf{M}$ into the
+sequentially conditioned innovations that the primal Kalman recursion
+in \ref{def:experience_learning_update} would produce.
+Dual form then allows us to reconstruct the posterior at any query point without ever
+storing the posterior mean and variance functions themselves.
+
+\paragraph{Worked example $t = 1$.}
+The agent begins with prior $Q^* \sim \mathcal{GP}(\mu, k)$, takes action
+$\mathbf{a}_0$ in state $\mathbf{s}_0$, receives utility
+$\eta^E_1 = u(\mathbf{a}_0, \mathbf{s}_0)$, and transitions to state
+$\mathbf{s}_1$. Define $\mathbf{x}^{\mathrm{dec}}_1 = (\mathbf{a}_0,
+\mathbf{s}_0)$ and $\mathbf{x}^{\mathrm{out}}_1 = (\tilde{\mathbf{a}}_1,
+\mathbf{s}_1)$, where $\tilde{\mathbf{a}}_1 = \arg\max_{\mathbf{a}}
+\mu(\mathbf{a}, \mathbf{s}_1)$. The dual form stores these support points,
+the scalar $\mathbf{Y} = (\eta^E_1)$, and the $1 \times 1$ inverse Gram
+matrix $C^{-1} = (C_{11})^{-1}$, where
+\begin{equation}
+    C_{11} = k(\mathbf{x}^{\mathrm{dec}}_1, \mathbf{x}^{\mathrm{dec}}_1)
+    - 2\beta\, k(\mathbf{x}^{\mathrm{dec}}_1, \mathbf{x}^{\mathrm{out}}_1)
+    + \beta^2\, k(\mathbf{x}^{\mathrm{out}}_1, \mathbf{x}^{\mathrm{out}}_1)
+    = \operatorname{Var}(\delta_1)
+\end{equation}
+is the prior variance of the first TD functional. The prior TD mean is
+$M_1 = \mu(\mathbf{a}_0, \mathbf{s}_0) - \beta\,\mu(\tilde{\mathbf{a}}_1,
+\mathbf{s}_1)$, so the residual $Y_1 - M_1 = \delta_1$. The weight is
+$\alpha_1 = \delta_1 / C_{11}$. At any query point $(\mathbf{a}, \mathbf{s})$,
+define $k_{*1} = k(\mathbf{x}^{\mathrm{dec}}_1, (\mathbf{a}, \mathbf{s}))
+- \beta\, k(\mathbf{x}^{\mathrm{out}}_1, (\mathbf{a}, \mathbf{s}))$. Then:
+\begin{equation}
+    \hat{Q}^E_1(\mathbf{a}, \mathbf{s})
+    = \mu(\mathbf{a}, \mathbf{s}) + \frac{k_{*1}}{C_{11}} \cdot \delta_1
+    = \mu(\mathbf{a}, \mathbf{s}) + \alpha^E_1(\mathbf{a}, \mathbf{s}) \cdot \delta_1
+\end{equation}
+The ratio $k_{*1}/C_{11}$ is precisely the Kalman gain at step 1. 
+The posterior variance is $\hat{\Sigma}^E_1 = \sigma^2_0 - k_{*1}^2 / C_{11}$.
+
+\paragraph{Worked example $t = 2$.}
+A second transition yields $\eta^E_2$, with new support points
+$\mathbf{x}^{\mathrm{dec}}_2 = (\mathbf{a}_1, \mathbf{s}_1)$ and
+$\mathbf{x}^{\mathrm{out}}_2 = (\tilde{\mathbf{a}}_2, \mathbf{s}_2)$.
+The Gram matrix expands to $2 \times 2$. The new diagonal entry $C_{22}
+= \operatorname{Var}(\delta_2)$ has the same structure as $C_{11}$.
+The off-diagonal $C_{12} = \operatorname{Cov}(\delta_1, \delta_2)$ measures 
+how correlated the two TD observations are (large when the observations are in nearby regions). 
+Schur complement allows us to efficiently update the inverse Gram matrix without inverting the full $2 \times 2$ matrix.
+\begin{equation}
+    S = C_{22} - \frac{C_{12}^2}{C_{11}}
+    = \operatorname{Var}(\delta_2 \mid \delta_1)
+\end{equation}
+The updated inverse is:
+\begin{equation}
+    C^{-1}_{\text{new}} = \begin{pmatrix}
+        \frac{1}{C_{11}} + \frac{q^2}{S} & -\frac{q}{S} \\[4pt]
+        -\frac{q}{S} & \frac{1}{S}
+    \end{pmatrix}, \qquad q = \frac{C_{12}}{C_{11}}
+\end{equation}
+The weight vector $\boldsymbol{\alpha} = C^{-1}(\mathbf{Y} - \mathbf{M})$
+now has two entries. The second is:
+\begin{equation}
+    \alpha_2
+    = \frac{\delta^{\mathrm{prior}}_2 - q \cdot \delta^{\mathrm{prior}}_1}{S}
+\end{equation}
+where $\delta^{\mathrm{prior}}_i = \eta^E_i - M_i$ is the $i$-th TD error
+evaluated against the original prior $\mu$. The numerator subtracts from
+the raw residual of observation~2 the component linearly predicted by
+observation~1 via the regression coefficient $q = C_{12}/C_{11}$. This is
+the incremental surprise, or the Kalman innovation at step~2, which
+the primal form obtains by measuring $\delta_2$ against the updated posterior
+$\hat{Q}^E_1$ rather than $\mu$. The posterior at any query point is:
+\begin{equation}
+    \hat{Q}^E_2(\mathbf{a}, \mathbf{s})
+    = \mu(\mathbf{a}, \mathbf{s})
+    + k_{*1}\,\alpha_1 + k_{*2}\,\alpha_2
+\end{equation}
+The two forms yield identical posteriors: the primal form updates beliefs
+sequentially so that each innovation is small; the dual form measures all
+residuals against the prior and lets $C^{-1}$ decorrelate them. The pattern
+generalizes to $N$ observations.

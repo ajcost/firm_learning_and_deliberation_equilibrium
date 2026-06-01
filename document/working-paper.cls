@@ -61,7 +61,7 @@
 % Title, abstract, figure/table labels
 % -----------------------------
 \let\LaTeXtitle\title
-\renewcommand{\title}[1]{\LaTeXtitle{\begin{minipage}{0.75\textwidth}\centering\huge\rmfamily\scshape #1\end{minipage}}}
+\renewcommand{\title}[1]{\LaTeXtitle{\begin{minipage}{0.8\textwidth}\centering\huge\rmfamily\scshape #1\end{minipage}}}
 \renewcommand{\abstractname}{Abstract}
 \renewenvironment{abstract}
   {\noindent\begin{center}\bfseries\abstractname\end{center}\vspace{-1em}\small\begin{quote}}

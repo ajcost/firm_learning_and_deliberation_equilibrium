@@ -1,0 +1,406 @@
+\section{Investment Problem} \label{sec:investment_problem} \label{sec:investment-problem}
+
+We consider the canonical dynamic investment problem of a single firm (firm $j$) that
+serves as the standard model of firm-level capital allocation in macroeconomics.
+The firm operates a production function $f(z_{j,t}, k_{j,t})$, concave and increasing
+in both arguments, where $z_{j,t}$ is an idiosyncratic productivity shock governing
+the firm's current efficiency and $k_{j,t}$ is its capital stock, the physical
+machinery and equipment at its disposal.
+
+The firm enters the period with a stock of debt $b_{j,t}$ which carries a risk-free
+interest rate $r$. Each period, the firm earns a dividend:
+\begin{equation}
+    d_{j,t} = f(z_{j,t}, k_{j,t}) - i_{j,t} - \psi(i_{j,t}, k_{j,t})
+    + b_{j,t+1} - (1+r)b_{j,t}.
+\end{equation}
+This represents the residual of output after investment expenditure $i_{j,t}$,
+capital adjustment costs $\psi(i_{j,t}, k_{j,t})$, and the net cash flow from
+issuing new debt $b_{j,t+1}$ and repaying existing debt obligations $(1+r)b_{j,t}$.
+The firm derives a per-period payoff $u(d_{j,t})$ from this dividend. The firm's
+problem is to choose policies for investment and debt that maximize the expected
+present discounted value of its payoff stream. It is common to model firms as
+risk-neutral agents with a linear payoff function, $u(d_{j,t}) = d_{j,t}$.
+
+\begin{equation}
+    \max_{\{i_{j,t},\, b_{j,t+1}\}_{t=0}^{\infty}} \;
+    \mathbb{E}_0 \left[ \sum_{t=0}^{\infty}
+    \beta^{t} d_{j,t} \right]
+\end{equation}
+
+The firm faces several frictions. First, a capital adjustment cost
+$\psi(i_{j,t}, k_{j,t})$ penalizes rapid changes in the capital stock;
+installing or dismantling capital is costly and disruptive. We consider a
+standard quadratic adjustment cost,
+\begin{equation}
+    \psi(i_{j,t}, k_{j,t}) =
+    \frac{\phi}{2} \left(\frac{i_{j,t}}{k_{j,t}}\right)^2 k_{j,t},
+\end{equation}
+where $\phi \geq 0$. This cost is convex in the rate of investment; the firm
+cannot freely jump to its desired capital stock and must smoothly adjust its
+capital stock. Second, a collateral borrowing constraint limits the firm's
+ability to finance investment externally. The firm can only issue new debt
+$b_{j,t+1}$ up to a fraction $\theta$ of its next-period capital stock:
+\begin{equation}
+    b_{j,t+1} \leq \theta k_{j,t+1}.
+\end{equation}
+This bounds the feasible investment action at each state and introduces the
+possibility that profitable investment opportunities go unexploited due to
+insufficient internal funds.
+
+The capital stock depreciates over time at a per-period rate $\delta$, evolving
+according to a standard law of motion:
+\begin{equation}
+    k_{j,t+1} = (1 - \delta) k_{j,t} + i_{j,t}.
+\end{equation}
+
+The firm's problem is therefore a dynamic programming problem with continuous
+state and action spaces. Defining the state as the firm's idiosyncratic
+productivity, capital, and debt $(z_{j,t}, k_{j,t}, b_{j,t})$, the problem can
+be expressed as the recursive Bellman equation:
+\begin{equation}
+    V(z_{j,t}, k_{j,t}, b_{j,t}) =
+    \max_{i_{j,t},\, b_{j,t+1}} \left\{
+    d_{j,t} + \beta \, \mathbb{E}\!\left[
+    V(z_{j,t+1}, k_{j,t+1}, b_{j,t+1})
+    \,\middle|\, z_{j,t} \right] \right\}
+\end{equation}
+subject to:
+\begin{align}
+    d_{j,t} &= f(z_{j,t}, k_{j,t}) - i_{j,t}
+    - \frac{\phi}{2} \left(\frac{i_{j,t}}{k_{j,t}}\right)^2 k_{j,t}
+    + b_{j,t+1} - (1+r)b_{j,t} \\
+    k_{j,t+1} &= (1 - \delta) k_{j,t} + i_{j,t} \\
+    b_{j,t+1} &\leq \theta k_{j,t+1} \\
+    d_{j,t} &\geq 0
+\end{align}
+where $V(\cdot)$ is the value function and the expectation is taken over the
+stochastic evolution of productivity conditional on the current state.
+
+\subsection{Solution to Canonical Investment Problem} \label{subsec:canonical-investment-solution}
+
+The firm's optimal investment policy can be summarized using the shadow value of
+installed capital ($q_{j,t}$). When the collateral constraint is slack,
+the optimal investment-capital ratio is linear in $(q_{j,t}-1)$, where $q_{j,t}$
+denotes the marginal value of installed capital. When the collateral constraint
+binds, however, investment is limited by the firm's borrowing capacity and internal
+funds. The resulting optimal investment policy can therefore be written as the following.
+\begin{equation}
+\frac{i_{j,t}}{k_{j,t}} =
+\begin{cases}
+\frac{1}{\phi}(q_{j,t}-1),
+& \text{if } b_{j,t+1} < \theta k_{j,t+1} \\
+\frac{k_{j,t+1}^{BC} - (1-\delta)k_{j,t}}{k_{j,t}},
+& \text{if } b_{j,t+1} = \theta k_{j,t+1}
+\end{cases}
+\end{equation}
+The term $k_{j,t+1}^{BC}$ denotes the level of next-period capital implied by the
+binding borrowing constraint and the firm's budget constraint. Intuitively, when
+the value of an additional unit of capital exceeds its installation cost, the firm
+increases investment. When the collateral
+constraint binds, capital also has value because it relaxes the borrowing limit,
+and investment becomes limited by available collateral rather than the marginal
+$q$ condition. The full derivation of the firm's first-order conditions and the
+resulting Tobin's $q$ investment rule is provided in \ref{app:canonical-investment-derivation}.
+
+\subsection{The Firm's Problem and Policy Under Specific Functional Forms} \label{subsec:canonical-investment-specific-forms}
+
+To this point, we have specified the firm's investment problem and derived the firm's optimal investment policy in general terms.
+For simplicity, we choose production to be Cobb-Douglas, $f(z_{j,t}, k_{j,t}) = z_{j,t} k_{j,t}^\alpha$, and the productivity shock to follow an AR(1) 
+process, $\ln z_{j,t+1} = \rho \ln z_{j,t} + \varepsilon_{j,t+1}$ with $\varepsilon_{j,t+1} \sim \mathcal{N}(0, \sigma_z^2)$. 
+We also assume linear utility, $u(d_{j,t}) = d_{j,t}$, so that the firm is risk-neutral.
+Under these assumptions, the Bellman equation characterizing the firm's problem takes the following explicit form, 
+subject to the capital accumulation law of motion and the collateral constraint, as described previously.
+\begin{equation}
+\begin{split}
+    V(z_{j,t}, k_{j,t}, b_{j,t}) &= 
+    \max_{i_{j,t},\, b_{j,t+1}} \Bigg\{ 
+    z_{j,t} k_{j,t}^\alpha - i_{j,t} 
+    - \frac{\phi}{2} \left(\frac{i_{j,t}}{k_{j,t}}\right)^2 k_{j,t} \\
+    &\quad + b_{j,t+1} - (1+r)b_{j,t} 
+    + \beta \, \mathbb{E} \left[ 
+    V(z_{j,t+1}, k_{j,t+1}, b_{j,t+1}) 
+    \,\middle|\, z_{j,t} \right] \Bigg\}
+\end{split}
+\end{equation}
+
+Intuitively, the value function represents the fundamental value of the firm given its 
+current state (defined by its productivity, capital, and debt $(z_{j,t}, k_{j,t}, b_{j,t})$) 
+under a specific set of policies. It decomposes this value into two parts: the current 
+dividend and the discounted expected value of future payoffs. The current dividend is 
+simply the firm's production revenue, $z_{j,t} k_{j,t}^\alpha$, minus the total cost of 
+investment including adjustment frictions, $i_{j,t} + \frac{\phi}{2} \left(\frac{i_{j,t}}{k_{j,t}}\right)^2 k_{j,t}$, 
+plus the net cash flow from debt management, $b_{j,t+1} - (1+r)b_{j,t}$. Consequently, the 
+maximized value function, $V(\cdot)$, corresponds to the fundamental equity value of 
+the firm when it optimally executes its investment and financing decisions. Because the 
+dividend represents the residual cash flow to owners after all operational and debt obligations are settled, maximizing this value function is 
+economically equivalent to maximizing shareholder value.
+
+Taking the first-order condition with respect to investment, the optimal policy relies 
+on the shadow value of installed capital, $q_{j,t}$, which is explicitly defined as the 
+expected marginal continuation value of an additional unit of capital:
+\begin{equation}
+    q_{j,t} = \beta \, \mathbb{E} \left[ \frac{\partial V(z_{j,t+1}, k_{j,t+1}, b_{j,t+1})}{\partial k_{j,t+1}} \,\middle|\, z_{j,t} \right].
+\end{equation}
+Using this definition, the firm's optimal investment-to-capital ratio can be written as:
+\begin{equation}
+\frac{i_{j,t}}{k_{j,t}} =
+\begin{cases}
+\frac{1}{\phi}(q_{j,t}-1),
+& \text{if } b_{j,t+1} < \theta k_{j,t+1} \\[10pt]
+\frac{k_{j,t+1}^{BC} - (1-\delta)k_{j,t}}{k_{j,t}},
+& \text{if } b_{j,t+1} = \theta k_{j,t+1}
+\end{cases}
+\end{equation}
+
+To visualize the rational firm's optimal policy, we show canonical phase diagrams
+in \ref{fig:rational_firm_policy_phase_diagrams}: the optimal next-period capital
+stock $k_{t+1}$ as a function of current capital $k_t$ for different productivity
+levels $z_t$, and the corresponding marginal value of capital
+$q_t$\footnote{Equivalently, the shadow price of capital or the Lagrange multiplier
+on the capital accumulation constraint.} as a function of $k_t$. Together these
+characterize the firm's policy: when $q_t > 1$ the firm invests and grows its
+capital stock; when $q_t < 1$ it disinvests. The firm invests such that
+$k_{t+1} = i_t + (1-\delta)k_t$ and $q_t = 1$ when the collateral constraint is
+slack, and up to the borrowing limit when it binds. Because the rational firm knows
+the optimal policy under any state $(z_t, k_t, b_t)$, it almost always avoids a
+binding collateral constraint. A large negative productivity shock followed by a
+large positive shock can produce a binding constraint, but this occurs with low 
+probability under the ergodic distribution.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1.0\textwidth]{../figures/rational_firm_policy_phase_diagrams.pdf}
+    \caption{Phase diagrams of the rational firm's optimal policy.}
+    \label{fig:rational_firm_policy_phase_diagrams}
+\end{figure}
+
+Notice in \ref{fig:rational_firm_policy_phase_diagrams} that the $q = 1$ crossings 
+in panel (b) do not align with the steady-state crossings in panel (a). This is 
+because $q = 1$ marks the extensive margin of investment, the capital stock at 
+which the firm is indifferent between adding and not adding a unit of capital, 
+i.e.\ $i = 0$. The $45°$ crossing marks the intensive margin, the capital stock 
+at which the firm invests exactly enough to offset depreciation, $i = \delta k$. 
+At the $q = 1$ crossing, the firm switches from divestment ($i < 0$, allowing 
+capital to decay) to active investment ($i > 0$). At the $45°$ crossing, the firm 
+reaches its stationary capital stock where gross investment equals depreciation. 
+The two are separated by the adjustment cost wedge: at steady state, 
+$q^* = 1 + \kappa \delta > 1$, so the firm must value capital strictly above 
+replacement cost to justify the flow cost of maintaining it.
+
+\subsection{Investment Problem Under Learning Through Reasoning and Experience}
+
+With the canonical formulation in hand, we can now transition to the RL framework.
+We now write the firm's problem using the reasoning and experience framework described
+in \ref{app:experience_reasoning_agent_consumption}. Importantly, the firm exists
+in the environment described previously (\ref{sec:investment-problem}), but 
+it does not know the solution (\ref{subsec:canonical-investment-solution}).
+The firm attempts to learn about its optimal policy through two processes: experience
+and planning. 
+
+The experience channel is a temporal-difference learning process with a Bayesian 
+update governed by a Kalman gain, formally described in 
+\ref{def:experience_learning_update}. Because the environment is stochastic, 
+the firm may misattribute outcomes to actions. For example, a particularly adverse productivity 
+realization can cause the firm to infer that its investment was too aggressive, 
+while a favorable shock can reinforce excessive divestment. The reasoning channel 
+resembles a model-based reinforcement learning process. At a cognitive cost, the 
+firm mentally simulates candidate actions and their consequences, refining its 
+beliefs about the action-value function beyond what experience alone provides. 
+This is formally described in \ref{def:reasoning_learning_update}.
+
+The two channels are linked through a certainty equivalence assumption: the firm 
+chooses its reasoning intensity under the expected realization of the reasoning 
+signals, so that reasoning reduces the posterior variance of $Q^*$ but does not 
+shift the conditional mean. The cognitive cost of reasoning is proportional to 
+the entropy reduction achieved, weighted by the shadow price of the entropy 
+constraint (the Lagrange multiplier on the exploration bound). This shadow price 
+captures the opportunity cost of uncertainty: when forced exploration is costly, 
+variance reduction is worth the cognitive expenditure. Because the reasoning step 
+preserves the conditional mean by construction, the belief sequence 
+$\{\hat{Q}_t\}$ is a martingale with respect to the reasoning filtration. 
+The firm cannot expect its own future reasoning to correct current errors, so 
+deviations from the rational policy are persistent.
+
+At each time $t$, the firm exists in state defined by its capital stock $k_t$, debt $b_t$, 
+and productivity $z_t$ ($\mathbf{s}_t = (z_t, k_t, b_t)$). The firm chooses both investment
+action $i_t$ and borrowing action $b_{t+1}$ ($\mathbf{a}_t = (i_t, b_{t+1})$) which 
+determine the next-period state through the transition function $\mathcal{F}(i_t, b_{t+1}, (z_t, k_t, b_t), \varepsilon_{t+1})$.
+\begin{equation}
+\mathbf{s}_{t+1} = 
+\begin{bmatrix}
+        z_{t+1} \\
+        k_{t+1} \\
+        b_{t+1}
+\end{bmatrix} = \mathcal{F}\left((i_t, b_{t+1}), (z_t, k_t, b_t), \varepsilon_{t+1}\right) =
+\begin{bmatrix}
+\exp\left(\rho \ln z_t + \varepsilon_{t+1}\right) \\
+(1-\delta)k_t + i_t \\
+b_{t+1}
+\end{bmatrix}
+\end{equation}
+
+The optimal policy is retrieved by solving the firm's constrained optimization problem 
+conditional on the state $\mathbf{s}_t = (z_t, k_t, b_t)$. In this context, 
+the \textit{Value Function} ($V$) represents the maximized fundamental equity value of 
+the firm, and the \textit{Action-Value Function} ($Q$) characterizes the immediate 
+dividend from a specific investment and financing choice plus the expected discounted 
+future value.
+
+\begin{proposition}[Optimal Policy and Value Functions]
+    The optimal policy $\pi^*$ maps the state $\mathbf{s}_t = (z_t, k_t, b_t)$ to actions $\mathbf{a}_t = (i_t, b_{t+1})$ subject to the collateral borrowing constraint. The Action-Value Function $Q^*$ and Value Function $V^*$ satisfy:
+\begin{align}
+        Q^*(\mathbf{s}_t, \mathbf{a}_t) &= z_t k_t^\alpha - i_t - \frac{\phi}{2} \left(\frac{i_t}{k_t}\right)^2 k_t + b_{t+1} - (1+r)b_t + \beta \mathbb{E} \left[ V^*(z_{t+1}, k_{t+1}, b_{t+1}) \,\middle|\, z_t \right] \\
+        V^*(\mathbf{s}_t) &= \max_{\mathbf{a}_t \in \Gamma(\mathbf{s}_t)} Q^*(\mathbf{s}_t, \mathbf{a}_t) = Q^*(\mathbf{s}_t, \pi^*(\mathbf{s}_t))
+\end{align}
+where $\Gamma(\mathbf{s}_t)$ represents the feasible action space defined by the collateral constraint $b_{t+1} \leq \theta ((1-\delta)k_t + i_t)$ and the non-negative dividend condition $d_t \geq 0$.
+\end{proposition}
+
+The firm is Bayesian and has beliefs over the true action-value function $Q^*$ described by
+a Gaussian Process with mean $\hat{Q}_t$ and covariance $\hat{\Sigma}_t$, identical to
+\ref{subsec:agent_beliefs}. As described in \ref{subsec:information_directed_policies}, 
+the firm's \textit{true} problem is a Bayes-adaptive Markov decision 
+process (BAMDP) where the true $Q^*$ is unknown and beliefs continuously evolve. 
+We assume the firm cannot solve it perfectly.\footnote{This problem
+is also computationally intractable and cannot be solved in this continuous state and action space setting.}
+Instead, the firm approximates the optimal policy over time through imperfect reasoning and experience.
+The experience and reasoning cycle each period as described in \ref{def:learning_cycle}.
+
+\begin{proposition}[Investment as the Sole Dynamic Choice Variable]
+\label{prop:debt_separation}
+The firm's state can be reduced from $\mathbf{s}_t = (z_t, k_t, b_t)$ to $\mathbf{s}_t = (z_t, k_t)$ by 
+substituting two case optimal borrowing policy. The reduced Bellman equation is:
+\begin{equation}
+\begin{split}
+    V^*(z_t, k_t) = \max_{i_t} \Big\{ & f(z_t, k_t) - i_t - \psi(i_t, k_t) 
+    + \theta k_{t+1}\bigl[1 - \beta(1+R)\bigr] \\
+    & + \beta\, \mathbb{E}\!\left[ V^*(z_{t+1}, k_{t+1}) \,\middle|\, z_t \right] \Big\}
+\end{split}
+\end{equation}
+where $k_{t+1} = (1-\delta)k_t + i_t$. When $\beta(1+R) > 1$, the debt terms 
+vanish ($b_{t+1} = 0$). The firm's action-value function reduces correspondingly 
+to $Q^*(z_t, k_t, i_t)$, and the firm need only maintain beliefs 
+$Q \sim \mathcal{GP}(\hat{Q}_t, \hat{\Sigma}_t)$ over the three-dimensional 
+state-action space $(z_t, k_t, i_t)$. Proof in \ref{app:proof:debt_separation}.
+\end{proposition}
+
+
+\subsection{Calibration \& Implementation Details} \label{subsec:investment_calibration}
+
+The firm's Gaussian process belief over the action-value function requires specifying 
+kernel hyperparameters, raising the question of how to discipline their calibration. 
+This may seem worrisome at first, as calibration requires taking a stance on the scale 
+of variation in the state-action space. In this section we provide a principled basis 
+for this choice.
+
+Ultimately, the kernel encodes how quickly the firm believes the value function changes 
+as it moves from $\mathbf{x}$ to $\mathbf{x}'$ in the state-action space. This belief
+can be compared to the true variation in the value function, providing a measure of
+how appropriately the firm generalizes from past experience to new situations.
+If the firm believes the action-value function changes more slowly than it actually does,
+it over-generalizes: it treats dissimilar states as interchangeable and transfers learning
+too broadly. If the firm believes the action-value function changes more rapidly than it
+actually does, it under-generalizes: it treats similar states as distinct and fails to
+transfer learning across them. If the firm believes the action-value function changes 
+at the same rate as it actually does, we consider it to be rational.
+We provide a formal characterization of this (\ref{def:kernel_rationality}).
+
+\begin{definition}[Kernel Rationality] \label{def:kernel_rationality}
+An agent's GP prior $\mathcal{GP}(\hat{Q}_0, \hat{\Sigma}_0)$ is 
+\textit{rational} at the steady state $\mathbf{x}^*$ if the 
+believed variation in $Q^*$ equals the true variation. Define the 
+rationality ratio along dimension $j$ at displacement 
+$\Delta x$ as
+\begin{equation}
+    R_j(\Delta x) \equiv 
+\frac{\operatorname{Std}\left( 
+    Q^*(\mathbf{x}^* + \Delta x \, \mathbf{e}_j) 
+- Q^*(\mathbf{x}^*) \mid \hat{\Sigma}_0 \right)}
+    {\left| Q^*(\mathbf{x}^* + \Delta x \, \mathbf{e}_j) 
+- Q^*(\mathbf{x}^*) \right|}
+\end{equation}
+\begin{itemize}
+\item[i)] \textit{Locally rational at $\Delta x$:} 
+$R_j(\Delta x) = 1$ for each dimension $j$.
+\item[ii)] \textit{Globally rational:} 
+$R_j(\Delta x) = 1$ for all $\Delta x > 0$ and all $j$.
+\end{itemize}
+When $R_j > 1$, the firm \textit{under-generalizes}: it believes $Q^*$ varies more 
+than it truly does, treating similar states as distinct and failing to transfer 
+learning across them. When $R_j < 1$, the firm \textit{over-generalizes}: it believes 
+$Q^*$ varies less than it truly does, treating distinct states as equivalent and 
+transferring learning too broadly.
+\end{definition}
+
+Note that we distinguish between local and global rationality. The true variation
+in $Q^*$ is governed by the economic primitives, whereas the kernel is a 
+finite-parameter object that generally cannot capture the true rate of change in $Q^*$ 
+at every displacement simultaneously. For example, the action-value function for our 
+firm is approximately linear in productivity $z$ and capital $k$ but quadratic in 
+investment $i$ (\ref{fig:rationality_diagnostic}). The squared-exponential kernel, 
+a standard choice in the GP literature and the one employed by 
+\citet{IlutValchev2023}, saturates at large displacements and therefore cannot 
+reproduce the true variation in $Q^*$ in each dimension $(z, k, i)$ at every 
+displacement $\Delta x$. A kernel calibrated to match local variation near the steady 
+state will over-generalize at large displacements, while a kernel calibrated to match large 
+displacements will under-generalize locally. It is therefore prudent to calibrate the kernel at a specific 
+displacement. Three choices are natural: the local neighborhood around the steady state 
+(gradient matching); one standard deviation of the ergodic distribution under the 
+rational policy (the typical displacement the firm experiences); and the kernel's own 
+characteristic scale, where the believed standard deviation equals $\sigma_0$.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1.0\textwidth]{../figures/kernel_rationality_diagnostic.pdf}
+    \caption{Kernel rationality and generalization. Top row: true variation 
+    $|\Delta Q^*|$ (black) versus believed variation $\hat{\sigma}_j(\Delta x)$ 
+    under rational (gray), under-generalizing (red), and over-generalizing 
+    (blue) calibrations. Bottom row: generalization gap 
+    $G_j(\Delta x) = \hat{\sigma}_j - |\Delta Q^*|$; positive regions 
+    indicate under-generalization, negative regions over-generalization. 
+    Dots mark crossings where the kernel is locally rational.}
+    \label{fig:rationality_diagnostic}
+\end{figure}
+
+\ref{fig:rationality_diagnostic} illustrates this limitation in the firm 
+investment problem. The squared-exponential kernel (RBF) cannot simultaneously match 
+the true variation in $Q^*$ at all displacements: its believed standard deviation 
+is concave in $|\Delta x|$ while the true variation may be linear, concave, or 
+convex depending on the dimension. At best, the believed and true variation 
+curves cross at a single displacement, with the kernel under-generalizing 
+($G > 0$) on one side of the crossing and over-generalizing ($G < 0$) on 
+the other.
+\begin{equation}
+    G_j(\Delta x) \equiv \hat{\sigma}_j(\Delta x) 
+    - \left| Q^*(\mathbf{x}^* + \Delta x\, \mathbf{e}_j) 
+    - Q^*(\mathbf{x}^*) \right|,
+\end{equation}
+\ref{prop:rational_rbf} characterizes the crossing point $G_j(\Delta x) = 0$ in terms of the kernel length scale 
+$\ell_j$, providing a calibration target. When the prior is exactly rational 
+along dimension $j$ (so that $|\Delta Q^*_j| = \sigma_0$ at the crossing), the 
+proposition yields $\ell_j = d_j / \sqrt{2 \ln 2} \approx 0.849\, d_j$, 
+explaining the gap between $\ell_j$ and $d_j$ visible in the top row of 
+Figure~\ref{fig:rationality_diagnostic}.
+
+\begin{proposition}[Rational Length Scales under the RBF Kernel]
+\label{prop:rational_rbf}
+Under the RBF kernel $\hat{\Sigma}_0(\mathbf{x}, \mathbf{x}') = \sigma_0^2 
+\exp\left(-\sum_j \frac{(x_j - x_j')^2}{2\ell_j^2}\right)$, 
+the agent's GP prior is locally rational at $\mathbf{x}^*$ and 
+displacement $d_j$ if and only if, for each dimension $j$, the length 
+scale satisfies:
+\begin{equation}
+    \ell_j = \frac{d_j}{\sqrt{-2\ln\left(1 - 
+    \frac{|\Delta Q^*_j|^2}{2\sigma_0^2}\right)}}
+\end{equation}
+where $|\Delta Q^*_j| \equiv |Q^*(\mathbf{x}^* + d_j \, \mathbf{e}_j) 
+- Q^*(\mathbf{x}^*)|$ is the true variation in the action-value function 
+over the chosen displacement.
+\end{proposition}
+
+\paragraph{Implementation.} We note that GP regression can be implemented via its 
+kernel (dual) representation which involves inverting the $N \times N$ Gram matrix rather than 
+operating in the potentially high-dimensional feature space.\footnote{This is more 
+computationally efficient when the number of observations $N$ is small relative to 
+the feature-space dimensionality.} In our setting the state-action space is continuous, 
+and it is reasonable to maintain hundreds of observations in the firm's experience buffer. 
+This representation is detailed in \ref{app:gp_regression_equivalence} and is the one used in our
+implementation.

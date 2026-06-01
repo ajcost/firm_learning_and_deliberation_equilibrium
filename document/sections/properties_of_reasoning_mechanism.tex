@@ -1,0 +1,48 @@
+% \section{Properties of Reasoning Mechanism}
+
+\begin{proposition}[Cognitive Friction and the Exploration Floor]
+\label{prop:reasoning_lower_bound_on_exploration}
+Let $\pi_t$ denote the optimal policy after the experience update and reasoning cycle, with differential entropy $\mathcal{H}(\pi_t) = -\int_{\mathbb{R}} \pi_t(c) \ln \pi_t(c) \, dc$.
+    
+\begin{itemize}
+    \item[i)] For any cognitive cost $\kappa > 0$, there exists an absolute lower bound on policy entropy $\underline{\mathcal{H}}(\kappa) \equiv \inf_{\pi_t} \mathcal{H}(\pi_t)$ such that:
+    \begin{equation}
+    \mathcal{H}(\pi_t) \geq \underline{\mathcal{H}}(\kappa) > 0 \quad \forall t.
+    \end{equation}
+    
+    \item[ii)] For all $\kappa$ below the shutdown threshold $\bar{\kappa} = H \cdot \delta_E \cdot \sup_i \lambda_i^E$, the exploration floor is strictly increasing in the cost of reasoning:
+    \begin{equation}
+    \frac{\partial \underline{\mathcal{H}}}{\partial \kappa} = \frac{1}{\delta_E} \sum_{i=1}^{\infty} \mathbb{1}_{\left\{\lambda_i^E > \frac{\kappa}{H \cdot \delta_E}\right\}} > 0.
+    \end{equation}
+        Consequently, for any $\bar{\kappa} > \kappa_2 > \kappa_1 > 0$,
+    \begin{equation}
+    \underline{\mathcal{H}}(\kappa_2) > \underline{\mathcal{H}}(\kappa_1).
+    \end{equation}
+    Proof provided in \ref{app:proof:reasoning_lower_bound_on_exploration}.
+\end{itemize}
+\end{proposition}
+
+% \section{Conclusion \& Next Steps}
+
+% Our model does a good job of endogenously generating heterogeneity across firms even
+% when they are identical ex-ante and face identical environments. This rationalizes
+% several empirical regularities. However, the model does fail to rationalize the 
+% cash-flow sensitivity of investment. There are some issues with the implementation
+% that could be improved, we list them here.
+
+% \begin{itemize}
+%     \item It should be clear from \ref{subsec:investment_calibration} that the RBF kernel
+%     may not be the best choice for this environment because it is not well-suited to 
+%     capture the shape of the true $Q^*$ function. This might affect the cash-flow 
+%     sensitivity result as well as cross-sectional heterogeneity. One should perhaps
+%     consider a custom kernel motivated by the structure of the environment.
+%     \item We did not have time to completely implement ablation studies to test robustness
+%     of the results to the choice of hyperparameters. This should be done.
+%     \item One should investigate the theoretical properties of the reasoning mechanism 
+%     and confirm the hypothesis provided in the discussion of the simulation results.
+%     \item We did not integrate this model into a general equilibrium framework. 
+%     This would be a natural next step to understand the aggregate implications. The firms
+%     may generate larger aggregate fluctuations given they would dynamically affect the
+%     cost of capital through their investment decisions, the household's consumption 
+%     decisions, and the stochastic discount factor and therefore the interest rate.
+% \end{itemize}

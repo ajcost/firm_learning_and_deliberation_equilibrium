@@ -1,0 +1,109 @@
+\section{Introduction, Literature Review, and Summary}
+
+In canonical models of firm investment, firms are perfectly rational agents capable of 
+solving infinite-horizon dynamic optimization problems. The firm uses capital $k_{j,t}$ 
+(physical machines, equipment, and infrastructure) to produce output via a production 
+function $f(z_{j,t}, k_{j,t})$, where $z_{j,t}$ is a stochastic productivity shock that 
+captures fluctuations in the firm's efficiency (e.g., demand shifts, supply 
+disruptions, technological changes). Each period, the firm can purchase new capital by 
+investing $i_{j,t}$, but the firm incurs convex adjustment costs $\psi(i_{j,t}, k_{j,t})$ that penalize rapid changes to its capital 
+stock (frictions of retooling factories, training workers on new equipment, and reorganizing production). 
+Capital depreciates over time at rate $\delta$ (machines wear out, equipment becomes obsolete), 
+so the firm's capital stock evolves as $k_{j,t+1} = (1-\delta)k_{j,t} + i_{j,t}$: what 
+survives from today plus what is installed. To finance investment, the firm can issue bonds $b_{j,t+1}$ (borrow from 
+external creditors), but lenders require collateral: borrowing is capped at a fraction 
+$\theta$ of next-period capital.
+
+This problem admits an analytical closed-form solution.
+Under this so-called neoclassical model, the optimal investment rule is simple: invest 
+until the shadow value of an additional unit of capital (Tobin's $q$) equals its 
+installation cost. When $q > 1$, a new machine generates more value than it costs to 
+install, so the firm invests; when $q < 1$, existing machines are worth less than their 
+replacement cost, so the firm divests.
+
+While elegant, there are well-documented empirical irregularities that pose challenges
+to this model.
+\begin{enumerate}
+    \item \textbf{Weak investment-q relationship.} The neoclassical model predicts that 
+    Tobin's $q$ is a sufficient statistic for investment. Empirically, $q$ explains almost 
+    none of the variation in firm-level investment. \citep{FazzariHubbardPetersen1988,Hubbard1998,EricksonWhited2000, AbelEberly1996}.
+    \item \textbf{Excess sensitivity to cash flow.} The neoclassical model predicts 
+    investment depends only on $q$, not on internal funds. Empirically, investment responds 
+    strongly to cash flow even after controlling for $q$. \citep{FazzariHubbardPetersen1988,KaplanZingales1997,Lamont1997, AbelEberly1996}.
+    \item \textbf{Excess investment dispersion.} The neoclassical model predicts firms 
+    with identical fundamentals make identical choices. Empirically, firms with similar 
+    observables make persistently different investment decisions. \citep{HsiehKlenow2009, BachmannBayer2014}
+    \item \textbf{Investment inertia and lumpy adjustment.} The neoclassical model with 
+    convex costs predicts smooth, continuous adjustment. Empirically, firms underreact for 
+    extended periods then make large discrete changes. \citep{DomsDunne1998,CooperHaltiwanger2006}.
+    \item \textbf{Asymmetric investment dynamics.} The neoclassical model predicts 
+    symmetric responses to positive and negative shocks. Empirically, firms expand gradually 
+    but contract sharply.\citep{AbelEberly1996,CaballeroEngel1999}.
+    \item \textbf{Fat-tailed firm size distribution.} The neoclassical model predicts 
+    convergence to a common steady state. Empirically, firm sizes exhibit persistent 
+    heterogeneity with a fat right tail. \citep{Lucas1978, Luttmer2007}
+\end{enumerate}
+
+This project proposes to address these puzzles by adapting the framework of 
+\cite{IlutValchev2023}\footnote{\cite{IlutValchev2023} develop their framework in the 
+context of a consumption-savings problem. This project extends it to the richer and 
+empirically distinct setting of firm investment.} to the context of firm investment. In 
+this model, agents do not know the true value of different actions. They may hold some 
+initial beliefs (a prior) over the action-value function $Q^*(s, a)$, which encodes the 
+present discounted value of taking action $a$ in state $s$ and behaving optimally 
+thereafter, but they must learn and refine these beliefs over time through experience and 
+reasoning (planning). From the firm's perspective, the true action-value function $Q^*$ is 
+unobserved, and the firm's beliefs $(\hat{Q}_t, \hat{\Sigma}_t)$ about it become part of 
+the relevant state.
+
+The firm operates as an RL agent that explores the state-action space to learn 
+about $Q^*$, it uses temporal-difference learning (\textit{model-free} RL) to update 
+its beliefs as well as some planning (or reasoning) (\textit{model-based} RL) to refine 
+them, and it ultimately develops an investment policy to maximize the expected present value of dividends.
+The true underlying MDP is, in fact, the neoclassical model described above, so the true 
+$Q^*$ is the known solution to that problem. However, firms in exploring and learning
+about $Q^*$ may generate a dispersion of investment policies that are path dependent as
+they are each subject to idiosyncratic shocks. This dispersion of policies may be persistent and
+not perfectly aligned with the neoclassical solution. In this framework we generate an 
+ergodic distribution of firm-level investment policies that can match the empirical puzzles.
+
+
+
+% \paragraph{Related Literature.}
+% This paper contributes to several strands of the literature. Most directly, it builds
+% on \cite{ilutvalchev2023}, who develop the GP learning and rational inattention
+% framework for household consumption and show that it generates learning traps,
+% persistent hand-to-mouth behavior, and high marginal propensities to consume. We
+% extend their framework to the firm side, where the forward-looking nature of capital
+% accumulation, the durability of the state variable, and the relevance of firm
+% heterogeneity for aggregate productivity create distinct economic forces.
+
+% On the investment side, the paper relates to the literature on lumpy investment and
+% non-convex adjustment costs \cite{cooperhaltiwanger2006, khanthomas2008}. Our model
+% generates observationally similar patterns from a different
+% primitive---informational rather than technological. \cite{bloom2009} and
+% \cite{bloometal2007} emphasize uncertainty shocks as a driver of investment
+% fluctuations through real options effects. In our framework, uncertainty is not an
+% exogenous shock but an endogenous state that evolves with the firm's learning history.
+
+% The paper contributes to the literature on misallocation and productivity.
+% \cite{hsiehklenow2009} and \cite{restucciarogerson2008} document and quantify the
+% aggregate productivity losses from cross-sectional dispersion in marginal products.
+% Subsequent work has attributed this dispersion to adjustment costs
+% \cite{askeretal2014}, financial frictions \cite{midriganxu2014, moll2014}, and
+% information frictions \cite{davidhopenhaynvenkateswaran2016}. Our learning trap
+% mechanism is closest to the information frictions channel but differs in that the
+% persistence of misallocation arises endogenously from the optimal choice to stop
+% learning, rather than from exogenous signal noise.
+
+% More broadly, the paper connects to work on bounded rationality and firm
+% decision-making. \cite{sims2003} introduces rational inattention, and
+% \cite{gabaix2014} develops a sparsity-based model in which agents attend to only a
+% subset of relevant variables. \cite{malmendiernageletal2011} and
+% \cite{malmendiertateyan2011} provide empirical evidence that managers' personal
+% experiences persistently shape corporate financial decisions, consistent with the
+% experience-based learning mechanism in our model. \cite{fusterlabsonmendel2010}
+% study how extrapolation from recent experience generates excess macroeconomic
+% volatility. Our contribution is to embed these ideas in a formally disciplined
+% framework with provable ergodic properties, connecting the micro evidence on
+% experience effects to the macro evidence on investment dynamics and misallocation.

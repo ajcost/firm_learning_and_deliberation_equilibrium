@@ -1,0 +1,610 @@
+
+\section{Setup} \label{sec:setup}
+
+We consider an agent with an expected utility function facing a consumption problem
+over a sequence of periods. At each period $t$, the agent chooses consumption $c_t$,
+and perfectly observes state variable $s_t$. The utility function is a function of
+$c_t$ and $s_t$ and therefore the agent perfectly observes their payoff $u(c_t, s_t)$ at
+each period. The agent discounts future utility by a factor $\beta \in (0,1)$.
+
+\begin{equation}
+    V^*(s_t) = \max_{c_t \in B(s_t)} \left\{ u(c_t, s_t) + \beta \mathbb{E} \left[ V^*(s_{t+1}) \right] \right\}
+\end{equation}
+
+This is the Bellman equation for the agent's state value function $V^*(s_t)$, where
+$B(s_t)$ is the agent's budget set at state $s_t$. This is directly linked to the
+agent's action value function $Q^*(s_t, c_t)$ and optimal policy function as follows.\footnote{Here we are using 
+$*$ to indicate the state and action value functions under the optimal policy,
+there is no difference in the formation of the equations under different policies. 
+Notationally, it would be indicated as $V^\pi$ and $Q^\pi$ for a policy $\pi$.}.
+
+\begin{proposition}[Relationships Between $Q^*$, $V^*$, and $\pi^*$] \label{prop:bellman_relationships}
+The optimal state value function $V^*(s)$, the optimal action value function $Q^*(s, c)$, and the optimal policy $\pi^*(s)$ are related as follows:
+\begin{align*}
+    \pi^*(s) &= \arg\max_{c \in B(s)} Q^*(s, c), \\
+    V^*(s) &= \max_{c \in B(s)} Q^*(s, c) = Q^*(s, \pi^*(s)), \\
+    Q^*(s, c) &= u(c, s) + \beta \mathbb{E}[V^*(s') \mid s, c], \\
+    V^*(s) &= u(\pi^*(s), s) + \beta \mathbb{E}[V^*(s') \mid s, \pi^*(s)].
+\end{align*}
+\end{proposition}
+
+There is a stochastic Markov transition function $\mathcal{F}(c_t, s_t, \epsilon_{t+1})$
+where $\epsilon_{t+1} \sim \mathcal{G}(\epsilon_{t+1})$ is an i.i.d. shock that perturbs
+the transition from $s_t$ to $s_{t+1}$.
+
+\subsection{Agent's Beliefs}
+
+The agent believes there to be some unknown optimal policy $\pi^*$ that produces
+optimal state action value function $Q^*(s_t, c_t)$. As the agent has not learned this policy
+yet, but they do form a prior over the set of possible action value functions $\mathcal{Q}$, which
+are modeled as Gaussian Processes (GPs).
+
+\begin{equation}
+    Q^*(c,s) \sim GP\left(\hat{Q}_0(c,s), \hat{\Sigma_0}((s,c), (s', c'))\right)
+\end{equation}
+
+The mean function is $\hat{Q}_0(c,s)$ and the covariance function is $\hat{\Sigma_0}((s,c), (s', c'))$.
+The use of GPs becomes useful in that they allow the agent to have correlated beliefs over
+similar state-action pairs, allowing for generalization across the space $\mathcal{Q}$. And,
+as new observations are made, the agent can update their beliefs using Bayesian updating, 
+which results in a new GP posterior over $\mathcal{Q}$. There are some useful properties 
+of GPs that will list out here for reference.
+
+\begin{proposition}[Closure Under Conditioning]
+    If $f \sim GP(\mu, k)$ and we have observations $\mathcal{D} = \{(x_i, y_i)\}_{i=1}^n$ where $y_i = f(x_i) + \epsilon_i$ with $\epsilon_i \sim \mathcal{N}(0, \sigma^2)$.
+    The posterior distribution $f | \mathcal{D} \sim GP(\mu_n, k_n)$ where
+\begin{align*}
+\mu_n(x) &= \mu(x) + k(x, X_n)(k(X_n, X_n) + \sigma^2 I)^{-1}(Y_n - \mu(X_n)) \\
+        k_n(x, x') &= k(x, x') - k(x, X_n)(k(X_n, X_n) + \sigma^2 I)^{-1}k(X_n, x')
+\end{align*}
+    where $X_n = (x_1, \ldots, x_n)^\top$ is the matrix of observed inputs and $Y_n = (y_1, \ldots, y_n)^\top$ is the vector of observed outputs.
+\end{proposition}
+
+\begin{proposition}[Finite-Dimensional Marginals Are Gaussian]
+    For any finite collection of points $\{x_1, \ldots, x_k\}$, the joint distribution $(f(x_1), \ldots, f(x_k))$ is multivariate normal. This implies that predictions at new points have joint Gaussian distributions.
+\end{proposition}
+
+\begin{proposition}[Linearity of the Mean]
+    If $f \sim GP(\mu, k)$, then for any linear functional $L$:
+    \begin{equation*}
+        L[f] \sim \mathcal{N}(L[\mu], L[k])
+    \end{equation*}
+    This extends to integration against measures. For instance, if the agent needs $\mathbb{E}_{s'}[V^*(s')] = \mathbb{E}_{s'}[\max_c Q^*(s', c)]$, the inner expectation over the transition kernel is tractable.
+    This is because the expectation operator defines a bounded linear functional on $L^1(\Omega, \mathcal{F}, P)$.
+    though the $\max$ operator introduces nonlinearity.
+\end{proposition}
+
+\subsection{Learning Process}
+
+Given the agent's prior is conveniently expressed as a gaussian process over action value functions,
+the agent performs Bayesian updating as new observations are made. The agent updates her beliefs 
+over $\mathcal{Q}$ through two mechanisms: experience  and reasoning.\footnote{
+    Given the agent is endowed with a belief over the action value function $Q^*$, they can derive
+    implied beliefs over the optimal policy $\pi^*$ and state value function $V^*$ using the relationships
+    stated in Proposition \ref{prop:bellman_relationships}. To compute the agent's prior belief over policies 
+    $\pi$, we need to calculate the distribution of the $\arg\max$ of a GP. However, this is not analytically 
+    tractable: if $f \sim GP(\mu, k)$, then $\arg\max_x f(x)$ is a random element of the input space whose 
+    distribution depends on the entire sample path structure and has no closed form.
+}
+The experience mechanism involves updating beliefs through direct observation of realized outcomes 
+$(s_t, c_t, u_t, s_{t+1})$ from actions taken. The reasoning mechanism involves updating 
+beliefs through mental simulation---evaluating counterfactual actions using the agent's model of transitions $\mathcal{F}$ and 
+payoffs $u$ without taking those actions.
+
+\begin{definition}[The Empirical-Reasoning Learning Cycle] \label{def:learning_cycle}
+    At each period $t$, the agent immediately receives signal $u(c_{t-1}, s_{t-1})$ from the previous period's action.
+    She then first performs an experience-based update to form intermediate beliefs $\hat{Q}^E_t, \hat{\Sigma}^E_t$.
+    Which has a corresponding optimal policy $\pi^E_t$ and state value function $V^E_t$.
+    Next, she performs a reasoning-based update using mental simulation under the new policy $\pi^E_t$ to form
+    reasoned beliefs $\hat{Q}^R_t, \hat{\Sigma}^R_t$, with corresponding $\pi^R_t$ and $V^R_t$.
+    Finally, she chooses action $c_t = \pi^R_t(s_t)$ under the reasoned policy.
+\end{definition}
+
+
+\subsubsection{Experience-Based Learning}
+
+The agent takes a consumption action $c_{t-1}$ in state $s_{t-1}$, receives
+payoff $u_{t-1} = u(c_{t-1}, s_{t-1})$, and transitions to state $s_t$, based on
+the Markov transition function $\mathcal{F}(c_{t-1}, s_{t-1}, \epsilon_t)$. They can
+now look back and form a temporal difference (TD) approximation. By rearranging the
+Bellman equation we can write the realized utility as a function of the action value function.
+\begin{equation}
+\underbrace{u(c_{t-1}, s_{t-1})}_{\text{observed}} = \underbrace{Q^*(c_{t-1}, s_{t-1})}_{\text{unknown, GP prior}} - \beta \underbrace{\mathbb{E}_{t-1}[Q^*(s_t, \pi^*(s_t))]}_{\text{requires integration over } \mathcal{F}}
+\end{equation}
+
+Since the agent does not know $Q^*$ or the transition function $\mathcal{F}$ 
+\textit{ex ante}, they cannot compute the Bellman expectation analytically. In the 
+experience-based learning phase, the agent replaces the theoretical expectation over 
+all possible future states with the single realized transition to $s_t$. Rather than 
+performing a simulation of potential outcomes, the agent learns directly from the 
+empirical evidence of the outcome. By observing the arrived state $s_t$ and identifying 
+their current best guess of the optimal action, $\tilde{c}_t = \arg\max_{c} \hat{Q}_{t-1}(c, s_t)$, 
+the agent constructs a Temporal Difference (TD) signal. This signal serves as a 
+sample-based realization of the Bellman equation, which the agent then uses to 
+perform a Bayesian update on the GP prior.
+
+\begin{definition}[Empirical Learning Update]
+    Upon arriving at period $t$, the agent observes the realized utility $\eta^E_t = u(c_{t-1}, s_{t-1})$ and the transition to state $s_t$. Given the prior beliefs $(\hat{Q}_{t-1}, \hat{\Sigma}_{t-1})$, the agent treats the experience as a signal $\eta^E_t$ of the true $Q^*$ function. The posterior beliefs $(\hat{Q}^E_t, \hat{\Sigma}^E_t)$ are formed via a Bayesian update:
+
+    \begin{equation}
+        \hat{Q}^E_t(c,s) = \hat{Q}_{t-1}(c,s) + \alpha^E_t(c,s) \underbrace{\left[ \eta^E_t + \beta \hat{Q}_{t-1}(\tilde{c}_t, s_t) - \hat{Q}_{t-1}(c_{t-1}, s_{t-1}) \right]}_{\text{TD Error: } \delta_t}
+    \end{equation}
+
+    where $\tilde{c}_t = \arg\max_{c} \hat{Q}_{t-1}(c, s_t)$ is the optimal action in the new state under current beliefs. The Kalman gain $\alpha^E_t(c,s)$ is defined by the GP covariance:
+    \begin{equation}
+        \alpha^E_t(c,s) = \frac{\text{Cov}(\delta_t, Q^*(c,s) \mid \mathcal{I}_{t-1})}{\text{Var}(\delta_t \mid \mathcal{I}_{t-1})}
+    \end{equation}
+    The posterior covariance $\hat{\Sigma}^E_t$ is updated to reflect the reduction in uncertainty:
+    \begin{equation}
+        \hat{\Sigma}^E_t(c,s,c',s') = \hat{\Sigma}_{t-1}(c,s,c',s') - \alpha^E_t(c,s) \text{Cov}(\delta_t, Q^*(c',s') \mid \mathcal{I}_{t-1})
+    \end{equation}
+\end{definition}
+
+\paragraph{Noise in Experience Signal} Because the experience signal is based on a single realized transition, it is subject
+to noise from the stochastic transition function $\mathcal{F}$. Agents may
+misattribute actions to outcomes due to random shocks. This can then cause posterior updates
+that updates upwards or downards incorrectly.
+
+\subsubsection{An Example of Experience-Based Learning in a Two-Period Model}
+
+Consider a two-period model in which an agent is endowed with initial wealth $s_1$ and 
+chooses consumption $c_1 \in [0, s_1]$, saving the remainder at gross interest rate $R$.
+Second-period wealth is $s_2 = R(s_1 - c_1) + \varepsilon$, where
+$\varepsilon \sim \mathcal{N}(0, \sigma_\varepsilon^2)$ is a mean-zero shock to the 
+transition. The agent has quadratic utility $u(c) = c - \frac{1}{2}c^2$ and
+discounts at rate $\beta$. In the terminal period the agent 
+consumes all wealth, so $c_2 = s_2$. The agent's problem is:
+
+\begin{equation}
+    \max_{c_1 \in [0, s_1]} \left[c_1 - \frac{1}{2}c_1^2\right]
+    + \beta \, \mathbb{E}\left[s_2 - \frac{1}{2}s_2^2\right]
+\end{equation}
+
+We set $\beta R = 1$, under which certainty equivalence holds and the rational agent smooths consumption
+equally across periods. The optimal first-period consumption is:
+\begin{equation}
+    c_1^* = \frac{R \, s_1}{1 + R}
+\end{equation}
+
+In our decision framework this solution implies the following state-value and action-value functions:
+
+\begin{align*}
+    Q^*(c_1, s_1) &= c_1 - \frac{1}{2}c_1^2 + \beta \left[s_2 - \frac{1}{2}s_2^2 + \sigma_\varepsilon^2\right] \\
+    V^*(s_1) &= Q^*(c_1^*, s_1), \quad V^*(s_2) = s_2 - \frac{1}{2}s_2^2
+\end{align*}
+
+We next consider an agent with the same utility and budget set who does not know the optimal policy or
+value functions. The agent holds a GP prior over
+$Q^*$:
+\begin{equation}
+  Q^*(s,c) \sim GP\left(
+    \hat{Q}_0(s,c), \;
+    k\left((s,c),(s',c')\right)
+  \right)
+\end{equation}
+with RBF kernel:
+\begin{equation}
+  k\left((s,c),(s',c')\right) = \sigma_0^2
+    \exp\left(
+      -\psi_s(s - s')^2 - \psi_c(c - c')^2
+    \right)
+\end{equation}
+We center the prior mean on the true action value function, $\hat{Q}_0 = Q^*$, so that any posterior
+deviation from the truth is driven entirely by noise in the experience signal rather than prior
+misspecification. We assume the agent chooses optimal action $c_1^*$ in the first period, 
+but is then subject to some transmission shock $\varepsilon$. Their temporal difference 
+signal is then:
+
+\begin{align*}
+    \delta &= u(c_1^*, s_1) + \beta \hat{Q}_0(s_2, s_2) - \hat{Q}_0(c_1^*, s_1) \\
+    &= c_1^* - \tfrac{1}{2}(c_1^*)^2 + \beta \hat{Q}_0(c_1^* + \varepsilon, c_1^* + \varepsilon) - \hat{Q}_0(c_1^*, s_1) \\
+    &= c_1^* - \tfrac{1}{2}(c_1^*)^2 + \beta \left[c_1^* + \varepsilon - \tfrac{1}{2}(c_1^* + \varepsilon)^2\right] - \left[c_1^* - \tfrac{1}{2}(c_1^*)^2 + \beta \mathbb{E}\left[s_2 - \tfrac{1}{2}s_2^2\right]\right] \\
+    &= c_1^* - \tfrac{1}{2}(c_1^*)^2 + \beta \left[c_1^* + \varepsilon - \tfrac{1}{2}(c_1^* + \varepsilon)^2\right] - c_1^* + \tfrac{1}{2}(c_1^*)^2 - \beta \left[c_1^* - \tfrac{1}{2}(c_1^*)^2 + \sigma_\varepsilon^2\right] \\
+    &= \beta \left[\varepsilon (1 - c_1^*) - \tfrac{1}{2}\varepsilon^2 + \tfrac{1}{2}\sigma_\varepsilon^2\right]
+\end{align*}
+
+The Kalman gain $\alpha^E$ is described by the covariance between the TD error $\delta$ 
+and the action value function $Q^*$:
+
+\begin{align*}
+  \alpha^E(s,c) &= \frac{
+    \text{Cov}(\delta, Q^*(s,c))
+  }{
+    \text{Var}(\delta)
+  } \\[8pt]
+  &= \frac{
+    \exp\left[
+      -\psi_s(s - s_1)^2
+      - \psi_c(c - c_1^*)^2
+    \right]
+    - \beta \exp\left[
+      -\psi_s(\varepsilon + c_1^* - s)^2
+      - \psi_c(\varepsilon + c_1^* - c)^2
+    \right]
+  }{
+    1 + \beta^2
+    - 2\beta \exp\left[
+      -\psi_c \varepsilon^2
+      - \psi_s \frac{
+        (\varepsilon + \varepsilon R - s_1)^2
+      }{(1+R)^2}
+    \right]
+  }
+\end{align*}
+
+Meaning for any point $(s,c)$ in the state-action space, the agent's difference 
+between the posterior mean $\hat{Q}^E(s,c)$ and the prior mean $\hat{Q}_0(s,c)$ is:
+
+\begin{align*}
+  \hat{Q}^E(s,c) - \hat{Q}_0(s,c)
+  &= \alpha^E(s,c) \cdot \delta \\[10pt]
+  &= \frac{
+    \exp\left[
+      -\psi_s(s - s_1)^2
+      - \psi_c(c - c_1^*)^2
+    \right]
+    - \beta \exp\left[
+      -\psi_s(\varepsilon + c_1^* - s)^2
+      - \psi_c(\varepsilon + c_1^* - c)^2
+    \right]
+  }{
+    1 + \beta^2
+    - 2\beta \exp\left[
+      -\psi_c \varepsilon^2
+      - \psi_s \frac{
+        (\varepsilon + \varepsilon R - s_1)^2
+      }{(1+R)^2}
+    \right]
+  } \\
+  &\qquad \times \;
+    \beta \left[\varepsilon (1 - c_1^*) - \tfrac{1}{2}\varepsilon^2 + \tfrac{1}{2}\sigma_\varepsilon^2\right]
+\end{align*}
+
+The difference between the posterior and prior mean at the optimal action $c_1^*$ is
+contaminated by noise from the transition shock $\varepsilon$. Given a risk-averse agent, 
+if $\varepsilon$ is negative, then the agent experiences a worse outcome than expected, leading to a 
+negative TD error and a downward update in beliefs. This is is shown in Figure \ref{fig:update_vs_eps},
+which plots the posterior distortion at the period-1 state-action pair $(s_1, c_1^*)$ against the shock $\varepsilon$. 
+
+%insert pfg figure
+\begin{figure} \label{fig:update_vs_eps}
+\centering
+\resizebox{\textwidth}{!}{
+  \input{../figures/update_vs_eps.pgf}
+}
+\caption[Posterior Distortion]{
+  \textbf{Posterior Distortion at $(s_1, c_1^*)$
+  vs.\ Shock. ($\varepsilon$)}
+The agent's posterior mean at starting state $s_1$ and optimal consumption $c_1^*$, $\hat{Q}^E(s_1,c_1^*)$, after the experience-based update, compared to the prior mean $\hat{Q}_0(s_1,c_1^*)$.}
+\end{figure}
+
+The agent misattributes the shock to the action. Figure \ref{fig:update_surface} shows the Kalman
+gain across the state-action space for three shock realizations. Under a $-2\sigma$ shock (left), the
+agent revises beliefs sharply downward near $(s_1, c_1^*)$, concluding the optimal action was
+worse than expected. Under a $+2\sigma$ shock (right), the same action appears better than
+expected. Comparing the two panels, the downward revision under the negative shock is larger in
+magnitude than the upward revision under the equally-sized positive shock. Under no shock (center), the agent
+still revises slightly upward: the realized outcome at $\varepsilon = 0$ exceeds what $Q^*$
+predicted in expectation, because $Q^*$ prices in the variance of future shocks that did not
+materialize, producing a small positive TD error of $\beta \tfrac{1}{2}\sigma_\varepsilon^2$.
+
+%insert pfg figure
+\begin{figure} \label{fig:update_surface}
+\centering
+\resizebox{\textwidth}{!}{\input{../figures/update_surface.pgf}}
+\caption[Posterior Distortion Surface]{
+  \textbf{Posterior Distortion Surface.} Kalman gain $\alpha^E(s,c)$ across the state-action space for three shock realizations.
+  Green indicates upward revision, red indicates downward. The light blue marker denotes the
+  period-1 state-action pair $(s_1, c_1^*)$; the dark blue marker denotes the period-2
+  point $(s_2, s_2)$. Colors are displayed on a $\mathrm{sgn}(\cdot)\sqrt{\ln(1+|\cdot|)}$ scale,
+  which linearizes the RBF kernel's exponential-quadratic decay in distance, so that the color
+  gradient is approximately proportional to distance from the observation points. Panel
+  titles report the raw error $\delta$; the full posterior update at any point is
+  $\alpha^E(s,c) \cdot \delta$.}
+\end{figure}
+
+\subsubsection{An Example of Experience-Based Learning in Infinite-Horizon Model}
+
+We extend the two-period example to an infinite-horizon setting with adjustments for
+tractability. Consider an agent endowed with initial wealth $s_1$ who chooses a consumption
+path $\{c_t\}_{t=1}^\infty$. The agent has log utility $u(c) = \ln(c)$ and faces a multiplicative
+wealth transition $s_{t+1} = R(s_t - c_t) \cdot e^{\varepsilon_t}$ with $\varepsilon_t \sim
+\mathcal{N}(0, \sigma_\varepsilon^2)$ i.i.d. The agent's problem is:
+
+\begin{equation}
+  \max_{\{c_t\}_{t=1}^\infty}
+    \sum_{t=1}^\infty \beta^{t-1}
+    \mathbb{E}\left[\ln(c_t)\right]
+\end{equation}
+
+The optimal policy is $c_t^* = (1-\beta)s_t$
+for all $t$, independent of the interest rate $R$.
+Under this policy, the true action value function
+and state value function are log-linear in their
+arguments. Defining the constant
+$\xi(\beta,R) \equiv \frac{\ln(1-\beta)}{1-\beta}
++ \frac{\beta\ln(R\beta)}{(1-\beta)^2}$:
+\begin{align}
+  Q^*(s,c) &= \ln(c)
+    + \frac{\beta}{1-\beta}\ln(R(s-c))
+    + \xi(\beta, R) \\
+  V^*(s) &= \frac{1}{1-\beta}\ln s
+    + \xi(\beta, R)
+\end{align}
+
+\paragraph{TD Error.}
+Suppose the agent holds a GP prior centered on the
+truth, $\hat{Q}_0 = Q^*$, and chooses the optimal
+action $c_1^* = (1-\beta)s_1$ at initial wealth
+$s_1$. Upon transitioning to
+$s_2 = \beta R s_1 e^{\varepsilon}$, the temporal difference reduces to a simple function of the shock $\varepsilon$.
+
+\begin{equation}
+  \delta
+    = \frac{\beta}{1-\beta}
+      \left[
+        \ln(\beta R s_1)
+        - \ln(\beta R s_1 e^{\varepsilon})
+      \right]
+    = -\frac{\beta}{1-\beta}\,\varepsilon
+\end{equation}
+
+The temporal difference is linear in the shock with no
+higher-order terms. Its variance is $\mathrm{Var}(\delta) = \left(\tfrac{\beta}{1-\beta}\right)^2
+\sigma_\varepsilon^2$, scaling with the squared infinite-horizon discount multiplier. Because
+the optimal policy and value functions are stationary, this result holds at any period: an
+agent at state $s_{t-1}$ who takes optimal action $c_{t-1}^* = (1-\beta)s_{t-1}$ and transitions to
+$s_t = \beta R s_{t-1} e^{\varepsilon_t}$ experiences the same temporal difference
+$\delta_t = -\frac{\beta}{1-\beta}\varepsilon_t$,
+independent of wealth.
+
+\paragraph{Posterior Update.} To respect the multiplicative nature of the wealth transition, the agent's similarity 
+measure must be scale-invariant. The natural choice is the \textit{Log-Laplace kernel}.
+\begin{equation}
+k\big((s,c), (s',c')\big) = \sigma_0^2 \exp\left( -\psi_s \left|\ln\frac{s}{s'}\right| - \psi_c \left|\ln\frac{c}{c'}\right| \right)
+\end{equation}
+The form captures the correct geometry, but the absolute values require piecewise 
+integration. However, we can derive a global closed-form solution by 
+exploiting the identity $\exp(-|z|)=\min(e^z, e^{-z})$. Applied to log-ratios, this 
+transforms the kernel into the product of minimum ratios.
+\begin{equation}
+\exp\left(-\psi \left|\ln\frac{x}{y}\right|\right) = \left[ \min\left(\frac{x}{y}, \frac{y}{x}\right) \right]^\psi
+\end{equation}
+This allows us to evaluate the kernel covariance analytically across the entire state space.
+Let $\rho(\varepsilon)$ denote the realized growth factor of wealth from $t-1$ to period $t$.
+Substituting the optimal policy into the transition equation $s_t = R(s_{t-1} - c_{t-1}^*) e^\varepsilon$ yields:
+\begin{equation}
+\rho(\varepsilon) \equiv \frac{s_t}{s_{t-1}} = \frac{c_t^*}{c_{t-1}^*} = \beta R e^\varepsilon
+\end{equation}
+Reiterating that the agent's prior is centered on the truth, the decision point is 
+$(s_{t-1}, c_{t-1}^*)$ and the outcome point is 
+$(s_t, c_t^*) = (s_{t-1}\rho(\varepsilon), c_{t-1}^*\rho(\varepsilon))$. 
+Using the simplified min-ratio form, the update is:
+\begin{equation}
+\hat{Q}^E(s,c) - \hat{Q}_0(s,c) =
+\left( -\frac{\beta \varepsilon}{1-\beta} \right)
+\cdot
+\frac{ \mathcal{K}_{t-1}(s,c) - \beta \mathcal{K}_t(s,c, \varepsilon) }{ 1 + \beta^2 - 2\beta \left[ \min\left(\rho(\varepsilon), \rho(\varepsilon)^{-1}\right) \right]^{\psi_s+\psi_c} }
+\end{equation}
+where the spatial decay terms $\mathcal{K}_{t-1}$ (anchored at the decision) and $\mathcal{K}_t $ (anchored at the outcome) are given by:
+\begin{align}
+\mathcal{K}_{t-1}(s,c) &= \left[ \min\left(\frac{s}{s_{t-1}}, \frac{s_{t-1}}{s}\right) \right]^{\psi_s} \left[ \min\left(\frac{c}{c_{t-1}^*}, \frac{c_{t-1}^*}{c}\right) \right]^{\psi_c} \\
+\mathcal{K}_t(s,c, \varepsilon) &= \left[ \min\left(\frac{s}{s_t}, \frac{s_t}{s}\right) \right]^{\psi_s} \left[ \min\left(\frac{c}{c_t^*}, \frac{c_t^*}{c}\right) \right]^{\psi_c}
+\end{align}
+
+% ============================================================
+% Kernel Evaluations at Decision and Outcome Points
+% ============================================================
+
+\paragraph{Kernel Evaluations.}
+Let $\psi \equiv \psi_s + \psi_c$ and define the \textit{min-ratio kernel overlap}:
+\begin{equation}
+m(\varepsilon) \equiv \left[\min\!\left(\rho(\varepsilon),\; \rho(\varepsilon)^{-1}\right)\right]^{\psi}
+\end{equation}
+where $\rho(\varepsilon) = \beta R e^\varepsilon$. Both savings and consumption scale by the common factor $\rho(\varepsilon)$. Each kernel evaluation reduces to a power of $\rho$ alone.
+\begin{align}
+\mathcal{K}_{t-1}(s_{t-1}, c_{t-1}^*) &= 1, &
+\mathcal{K}_t(s_{t-1}, c_{t-1}^*, \varepsilon) &= m(\varepsilon), \notag\\
+\mathcal{K}_{t-1}(s_t, c_t^*) &= m(\varepsilon), &
+\mathcal{K}_t(s_t, c_t^*, \varepsilon) &= 1, \notag\\[6pt]
+%
+\hat{Q}^E(s_{t-1}, c_{t-1}^*) - \hat{Q}_0(s_{t-1}, c_{t-1}^*)
+&= \frac{-\beta\varepsilon}{(1-\beta)}
+\cdot \frac{1 - \beta\, m(\varepsilon)}{1 + \beta^2 - 2\beta\, m(\varepsilon)}, \\[6pt]
+%
+\hat{Q}^E(s_t, c_t^*) - \hat{Q}_0(s_t, c_t^*)
+&= \frac{-\beta\varepsilon}{(1-\beta)}
+\cdot \frac{m(\varepsilon) - \beta}{1 + \beta^2 - 2\beta\, m(\varepsilon)}.
+\end{align}
+The two updates share a common denominator and prefactor. 
+\begin{equation}
+m(\varepsilon) =
+\begin{cases}
+(\beta R e^\varepsilon)^{\psi} & \text{if } \varepsilon < \varepsilon^* \quad (\rho < 1), \\[4pt]
+(\beta R e^\varepsilon)^{-\psi} & \text{if } \varepsilon \geq \varepsilon^* \quad (\rho \geq 1).
+\end{cases}
+\end{equation}
+
+
+
+
+% We illustrate the experience-based learning mechanism with a tractable consumption-savings example.
+
+% \paragraph{Environment.} Consider an agent with quadratic utility $u(c) = c - \frac{\alpha}{2}c^2$ facing a linear wealth transition $s_{t+1} = R(s_t - c_t) + y_t$, where $y_t \in \{y_L, y_M, y_H\}$ is income drawn uniformly, so $\mathbb{E}[y_t] = y_M$. We impose $\beta R = 1$, which implies the optimal policy is to smooth consumption: $c^* = \frac{R-1}{R}s + y_M$.
+
+% \paragraph{Functional Form of $Q^*$.} With quadratic utility and linear transitions, the Bellman equation admits a polynomial solution. Therefore:
+% \begin{equation}
+%     Q^*(s,c) = \theta_0 + \theta_1 s + \theta_2 c + \theta_3 c^2 + \theta_4 sc + \theta_5 s^2
+% \end{equation}
+% where the coefficients $\boldsymbol{\theta} = (\theta_0, \theta_1, \theta_2, \theta_3, \theta_4, \theta_5)^\top$ depend on the primitives $\alpha, \beta, R, y_M, \text{Var}(y)$.
+
+% \paragraph{Agent's Prior.} The agent knows $Q^*$ is polynomial in $(s,c)$ but does not know the coefficients. They hold a Gaussian prior:
+% \begin{equation}
+%     \boldsymbol{\theta} \sim \mathcal{N}(\boldsymbol{\mu}_0, \boldsymbol{\Sigma}_0)
+% \end{equation}
+% Define the feature vector $\boldsymbol{\phi}(s,c) = (1, s, c, c^2, sc, s^2)^\top$, so that $Q^*(s,c) = \boldsymbol{\phi}(s,c)^\top \boldsymbol{\theta}$.
+
+% \paragraph{Greedy Policy.} Given current beliefs $\hat{\boldsymbol{\mu}}_{t-1}$, the agent chooses:
+% \begin{equation}
+%     c_t = \arg\max_c \, \boldsymbol{\phi}(s_t, c)^\top \hat{\boldsymbol{\mu}}_{t-1}
+% \end{equation}
+
+% \paragraph{Bayesian Updating.} The agent observes utility $\eta^E_t = u(c_{t-1})$ and interprets it via the TD approximation:
+% \begin{equation}
+%     \eta^E_t = Q^*(s_{t-1}, c_{t-1}) - \beta Q^*(s_t, \tilde{c}_t) = \boldsymbol{x}_t^\top \boldsymbol{\theta}
+% \end{equation}
+% where $\boldsymbol{x}_t = \boldsymbol{\phi}(s_{t-1}, c_{t-1}) - \beta \boldsymbol{\phi}(s_t, \tilde{c}_t)$ and $\tilde{c}_t$ is the greedy action at $s_t$. The posterior update is:
+% \begin{align}
+%     \hat{\boldsymbol{\mu}}_t &= \hat{\boldsymbol{\mu}}_{t-1} + \boldsymbol{K}_t \left(\eta^E_t - \boldsymbol{x}_t^\top \hat{\boldsymbol{\mu}}_{t-1}\right) \\
+%     \hat{\boldsymbol{\Sigma}}_t &= \hat{\boldsymbol{\Sigma}}_{t-1} - \boldsymbol{K}_t \boldsymbol{x}_t^\top \hat{\boldsymbol{\Sigma}}_{t-1}
+% \end{align}
+% where the Kalman gain is:
+% \begin{equation}
+%     \boldsymbol{K}_t = \frac{\hat{\boldsymbol{\Sigma}}_{t-1} \boldsymbol{x}_t}{\boldsymbol{x}_t^\top \hat{\boldsymbol{\Sigma}}_{t-1} \boldsymbol{x}_t}
+% \end{equation}
+
+% \paragraph{Misattribution from Income Shocks.} Suppose the agent experiences income sequence $y_L, y_M, y_M, y_H, y_M, y_M$. In period 1, income $y_L < y_M$ realizes. The agent arrives at state $s_1 = R(s_0 - c_0) + y_L$, which is lower than expected. The TD error $\eta^E_1 - \boldsymbol{x}_1^\top \hat{\boldsymbol{\mu}}_0$ is negative: the agent received less than predicted. They update $\hat{\boldsymbol{\mu}}_1$ downward, concluding that consuming $c_0$ at wealth $s_0$ was worse than previously believed. But the bad outcome came from unlucky income, not from the consumption choice. The agent misattributes luck to policy.
+
+% When $y_H$ realizes in period 4, the opposite occurs: the agent arrives at a higher state than expected, the TD error is positive, and they update upward---again misattributing the income shock to their action. Over the sequence, beliefs oscillate with income realizations rather than converging smoothly to the truth.
+
+\subsubsection{Learning Through Reasoning}
+
+We suppose that the agent can produce mental simulations and evaluate counterfactual actions, developing a 
+noisy vector of signals $\boldsymbol{\eta}^R_t$ that provide information about the 
+action value function. To formalize this, fix the current state $s_t$ and consider 
+the vector of action values across all possible consumption levels:
+\begin{equation}
+    \boldsymbol{Q}^*(s_t) = (Q^*(s_t, c_1), Q^*(s_t, c_2), \ldots, Q^*(s_t, c_n))^\top
+\end{equation}
+By the GP assumption, this vector is jointly Gaussian with mean 
+$\hat{\boldsymbol{Q}}_{t-1}(s_t)$ and covariance $\hat{\boldsymbol{\Sigma}}_{t-1}(s_t)$ 
+derived from the kernel. We then suppose the agent can generate noisy observations of
+linear combinations of this vector, which represent mental simulations of different actions.
+The noise covariance captures the precision of the agent's mental model. The higher the precision,
+the more accurate the simulations, but the greater the cognitive cost. In the limit,
+the agent is able to perfectly evaluate all actions, equivalent to knowing $Q^*$ exactly.
+
+\begin{definition}[Reasoning-Based Learning Update]
+    Following the experience-based update, the agent performs internal mental 
+    simulations to refine their beliefs. At the current state $s_t$, the agent 
+    generates a vector of noisy reasoning signals $\boldsymbol{\eta}^R_t$, 
+    representing hypothesized action-values. These signals are modeled as:
+    \begin{equation}
+        \boldsymbol{\eta}^R_t = \boldsymbol{\Omega}'_t \boldsymbol{Q}^*(s_t) + \boldsymbol{\epsilon}_{\eta, t}, \quad \boldsymbol{\epsilon}_{\eta, t} \sim \mathcal{N}(\boldsymbol{0}, \boldsymbol{\Sigma}_{\eta, t})
+    \end{equation}
+    where $\boldsymbol{\Omega}'_t$ is a $k \times n$ loadings matrix chosen by the 
+    agent to determine which action comparisons are evaluated during simulation. 
+    Treating these as signals of the true $Q^*$ function, the agent forms reasoned 
+    beliefs $(\hat{Q}^R_t, \hat{\Sigma}^R_t)$ via a Bayesian update on the intermediate 
+    beliefs $(\hat{Q}^E_t, \hat{\Sigma}^E_t)$:
+    \begin{align}
+        \hat{Q}^R_t(c,s) &= \hat{Q}^E_t(c,s) + \boldsymbol{\alpha}^R_t(c,s)^\top \left[\boldsymbol{\eta}^R_t - \boldsymbol{\Omega}'_t \hat{\boldsymbol{Q}}^E_t(s_t)\right] \\
+        \boldsymbol{\alpha}^R_t(c,s) &= \text{Cov}(\boldsymbol{\eta}^R_t, Q^*(c,s) \mid \mathcal{I}^E_t) \left[\text{Var}(\boldsymbol{\eta}^R_t \mid \mathcal{I}^E_t)\right]^{-1}
+    \end{align}
+    The posterior covariance $\hat{\Sigma}^R_t$ is updated accordingly to reflect the reduction in uncertainty from mental simulation:
+    \begin{equation}
+        \hat{\Sigma}^R_t(c,s,c',s') = \hat{\Sigma}^E_t(c,s,c',s') - \boldsymbol{\alpha}^R_t(c,s)^\top \text{Cov}(\boldsymbol{\eta}^R_t, Q^*(c',s') \mid \mathcal{I}^E_t)
+    \end{equation}
+\end{definition}
+
+\subsection{Action Selection}
+
+At each period $t$, the agent goes through the set of steps in Definition \ref{def:learning_cycle}. They first perform a bayesian
+update of their beliefs based on realized utility from the previous period: \textit{experience-based learning}.
+They then must choose how much reasoning to do to optimally update their beliefs: \textit{reasoning decision}.
+At each step, the agent faces two tasks: one to determine optimal policy given current beliefs, and another to determine
+the optimal reasoning strategy to improve those beliefs.
+
+\subsubsection{The Optimal Policy Decision}
+
+The agent's action decision is governed by their policy function $\pi_t(c | s_t)$. This policy is derived from maximizing expected payoffs subject to exploration constraints. The agent solves the following problem based on their current beliefs $\hat{Q}_t$:
+
+\begin{align}
+    \max_{\pi_t(\cdot | s_t)} \quad & \sum_c \hat{Q}_t(c, s_t) \pi_t(c | s_t) \\
+    \text{s.t.} \quad & \sum_c \pi_t(c | s_t) = 1 \\
+    & -\sum_c \pi_t(c | s_t) \ln \pi_t(c | s_t) \geq h \sum_c \sigma_t(c, s_t) \label{eq:entropy_constraint}
+\end{align}
+
+The exploration constraint is motivated by the principle of 
+\textit{uncertainty-driven exploration}. In standard maximum entropy reinforcement 
+learning, the entropy floor is often a fixed parameter. Here, we specify the lower bound 
+as proportional to the agent's total posterior uncertainty, $\sum \sigma_t(c, s_t)$. 
+Experimentation is valuable only to the extent that the agent is uncertain about the true payoffs. 
+When uncertainty is high, the constraint tightens, forcing the agent to spread 
+probability mass across actions to learn; as uncertainty vanishes, the constraint 
+relaxes, allowing the agent to converge toward the greedy policy.
+
+\begin{proposition}[Optimal Action Policy] \label{prop:optimal_policy}
+    The solution to the constrained maximization problem yields a state-dependent softmax distribution:
+    \begin{equation}
+        \pi_t(c | s_t) = \begin{cases} 
+        \dfrac{\exp\left(\hat{Q}_t(c, s_t) / \delta_t\right)}{\sum_{c'} \exp\left(\hat{Q}_t(c', s_t) / \delta_t\right)} & \text{if } \delta_t > 0 \\[3ex] 
+        \mathbb{I}\left(c = \arg\max_{c'} \hat{Q}_t(c', s_t)\right) & \text{if } \delta_t = 0 
+        \end{cases}
+    \end{equation}
+    where $\delta_t \geq 0$ is the Lagrange multiplier associated with the entropy constraint.
+    The multiplier $\delta_t$ acts as an endogenous temperature parameter. When 
+uncertainty is high, $\delta_t$ is large, flattening the policy distribution.
+\end{proposition}
+
+ Note
+that this optimization is performed twice within the period $t$ learning cycle. First, 
+it is solved using the intermediate experience-based beliefs $\hat{Q}^E_t$ to form draft policy $\pi^E_t$,
+which is used in the reasoning process to evaluate expected payoffs from mental simulation.
+Second, after reasoning signals are realized, it is solved using the final reasoned beliefs $\hat{Q}^R_t$ 
+to determine the $\pi^R_t$ for action execution.
+
+\subsubsection{The Reasoning Decision}\label{sec:reasoning-decision}
+
+Reducing uncertainty allows the agent to tighten their priors over the action value function,
+and thus improve their policy. Because they are endowed with some reasoning capacity, they
+will naturally use it to improve their beliefs. However, reasoning is costly.
+The agents face a rational inattention problem in which they must optimally allocate their limited
+cognitive resources to improve their beliefs. They choose how many simulations to run
+and the precision of those simulations, balancing the expected improvement in payoffs
+against the cognitive cost of reasoning.
+
+The agent chooses the simulations to run ($\boldsymbol{\Omega}_t$) and the precision of 
+those simulations ($\boldsymbol{\Sigma}_{\eta, t}$). The reasoning signal takes the 
+form $\eta^R_t = \boldsymbol{\Omega}_t Q^* + \varepsilon$ with $\varepsilon 
+\sim \mathcal{N}(0, \boldsymbol{\Sigma}_{\eta,t})$, where rows of $\boldsymbol{\Omega}_t$ 
+specify which linear combinations of $Q^*(c,s)$ to reason about, and $\boldsymbol{\Sigma}_{\eta,t}$ 
+governs the noise in those comntemplations. The agent maximizes expected payoff net of reasoning costs:
+
+\begin{equation}
+\max_{\boldsymbol{\Omega}_t, \boldsymbol{\Sigma}_{\eta, t}} \mathbb{E}\left[ \sum_c \hat{Q}^R_t(c, s_t) \cdot \pi_t(c | s_t) \mid \mathcal{I}^E_t \right] - \kappa \ln\left[\frac{|\hat{\boldsymbol{\Sigma}}^E_t|}{|\hat{\boldsymbol{\Sigma}}^R_t|}\right]
+\end{equation}
+The cost term is the information gain from reasoning, measured as the entropy reduction in beliefs about $Q^*$. The lower the posterior covariance $\hat{\boldsymbol{\Sigma}}^R_t$, the more precise the beliefs, and the higher the cost; in the limit the cost of perfect information becomes infinite. The parameter $\kappa$ governs the marginal cost of information.
+
+\begin{proposition}[Optimal Reasoning Allocation]
+    Let $\hat{\boldsymbol{\Sigma}}^E_t = V \Lambda^E V'$ be the eigendecomposition of the prior covariance, where $\Lambda^E = \mathrm{diag}(\lambda_1^E, \ldots, \lambda_n^E)$ with $\lambda_1^E \geq \cdots \geq \lambda_n^E > 0$. The optimal posterior covariance is:
+    \begin{equation}
+        \hat{\boldsymbol{\Sigma}}^R_t = V \Lambda^* V'
+    \end{equation}
+    where $\Lambda^* = \mathrm{diag}(\lambda_1^*, \ldots, \lambda_n^*)$ with:
+    \begin{equation}
+        \lambda_i^* = \min\left\{ \lambda_i^E, \; \frac{\kappa}{h \delta^E_t} \right\}
+    \end{equation}
+    and $\delta^E_t$ is the Lagrange multiplier from the draft policy problem solved under prior beliefs $\hat{Q}^E_t$. The optimal signal structure sets $\boldsymbol{\Omega}^*_t = V'$ and $\boldsymbol{\Sigma}^*_{\eta,t} = \mathrm{diag}(\sigma_1^2, \ldots, \sigma_n^2)$ with:
+    \begin{equation}
+        \sigma_i^2 = \begin{cases} 
+            \dfrac{\lambda_i^E \lambda_i^*}{\lambda_i^E - \lambda_i^*} & \text{if } \lambda_i^E > \dfrac{\kappa}{h\delta^E_t} \\[2ex]
+            \infty & \text{otherwise}
+        \end{cases}
+    \end{equation}
+\end{proposition}
+
+\paragraph{Reverse Water Filling.} The threshold $\kappa/(h\delta^E_t)$ acts as a ``water level.'' 
+Eigendirections with prior variance exceeding this level are reasoned about until 
+variance equals the threshold. The agent allocates cognitive effort to their largest 
+uncertainties first, stopping when the marginal cost of further precision ($\kappa$) 
+exceeds its marginal value ($h\delta^E_t$).
+
+The reasoning decision must be made before the reasoning signal $\eta^R_t$ is realized, 
+so the agent cannot condition on the final posterior $\hat{Q}^R_t$. Instead, they 
+evaluate the marginal value of precision using $\delta^E_t$—the shadow price of the 
+entropy constraint from the draft policy problem solved under experience-based beliefs 
+$\hat{Q}^E_t$. This shadow price measures how much the agent would gain from being 
+allowed to exploit more (randomize less). Under certainty equivalence, the agent 
+commits to a reasoning intensity as if the posterior mean will equal the prior mean, 
+making $\delta^E_t$ a sufficient statistic for how valuable reducing uncertainty would be.
