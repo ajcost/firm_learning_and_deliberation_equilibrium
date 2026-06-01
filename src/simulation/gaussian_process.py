@@ -7,7 +7,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
-    from .firm import InvestmentParameters, RationalInvestmentAgent, InvestmentEnvironment
+    from .environment import InvestmentParameters, InvestmentEnvironment
+    from .firm import RationalInvestmentAgent
 
 
 class GPPrior(ABC):
@@ -191,7 +192,7 @@ class GPBelief:
         m_0 = np.atleast_1d(self.prior_mean_fn(x_dec))[0] - self.env_params.BETA * np.atleast_1d(self.prior_mean_fn(x_out))[0]
         self.alpha = self.C_inv @ np.array([dividend - m_0])
     
-    def add_observation(self, x_dec, x_out, dividend):
+    def add_observation(self, x_dec, x_out, dividend, return_gain=False):
         """
         Incorporates a new Temporal Difference observation and recursively 
         updates the inverse Gram matrix and weights.
@@ -224,6 +225,10 @@ class GPBelief:
         
         M = self.prior_mean_fn(self.X_dec) - self.env_params.BETA * self.prior_mean_fn(self.X_out)
         self.alpha = self.C_inv @ (self.Y - M)
+
+        if return_gain:
+            return S / w
+
 
     def _predict_no_observations(self, X_query, return_std):
         """Returns the prior mean and variance when no observations have been made."""
@@ -265,3 +270,11 @@ class GPBelief:
         K_qq = self.kernel(X_q, X_q)
         post_cov = K_qq - k_star.T @ self.C_inv @ k_star
         return post_mean, post_cov
+    
+    def reset(self):
+        """Resets the GP to its prior state, clearing all observations."""
+        self.X_dec = np.empty((0, 3))
+        self.X_out = np.empty((0, 3))
+        self.Y = np.empty(0)
+        self.C_inv = np.empty((0, 0))
+        self.alpha = np.empty((0,))

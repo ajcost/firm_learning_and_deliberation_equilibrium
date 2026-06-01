@@ -2,147 +2,22 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-import warnings
 
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy.optimize import brentq
 from scipy.optimize import minimize_scalar
 
-import quantecon as qe
+from .environment import (
+    InvestmentParameters,
+    SimResult,
+    InvestmentEnvironment,
+)
 from .gaussian_process import GPBelief # type: ignore[import]
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .gaussian_process import GPBeliefParameters
-
-@dataclass
-class InvestmentParameters:
-    ALPHA: float = 0.33 # Capital production elasticity
-    DELTA: float = 0.04 # Depreciation rate
-    R: float = 0.03     # Interest rate
-    THETA: float = 0.0  # Collateral constraint fraction (b_{t+1} <= theta * k_{t+1})
-    BETA: float = 0.96  # Discount factor (set independently of R)
-
-    # These will be set based on the scenario
-    KAPPA: float = 0.1   # Adjustment cost parameter
-    RHO: float = 0.9     # Persistence
-    SIGMA_EPS: float = 0.0 # Volatility (0 = Deterministic)
-
-    # Grid Parameters
-    N_k: int = 100
-    N_z: int = 7
-    K_min: float = 0.01
-    K_max: float = 20.0
-
-
-@dataclass
-class SimResult:
-    t: np.ndarray
-    z: np.ndarray
-    k: np.ndarray
-    k_next: np.ndarray
-    i: np.ndarray
-    d: np.ndarray
-    b: np.ndarray
-    b_next: np.ndarray
-
-
-class AdjustmentCosts(ABC):
-    @abstractmethod
-    def __call__(self, i: float, k: float) -> float:
-        """Returns psi(i, k)."""
-        raise NotImplementedError
-
-class NoAdjustmentCosts(AdjustmentCosts):
-    def __call__(self, i: float, k: float) -> float:
-        return 0.0
-
-class QuadraticAdjustmentCosts(AdjustmentCosts):
-    def __init__(self, kappa: float):
-        self.kappa = kappa
-
-    def __call__(self, i: float, k: float) -> float:
-        k_safe = max(k, 1e-8)
-        return (self.kappa / 2.0) * (i**2 / k_safe)
-
-
-class InvestmentEnvironment:
-    def __init__(self, params: InvestmentParameters, adjustment_costs: AdjustmentCosts, seed: int = 42):
-        self.p = params
-        self.adjustment_costs = adjustment_costs
-        self.rng = np.random.default_rng(seed)
-        self.setup_grids()
-
-    def setup_grids(self):
-        if self.p.SIGMA_EPS > 0 and self.p.N_z > 1:
-            mc = qe.markov.approximation.tauchen(
-                self.p.N_z, self.p.RHO, self.p.SIGMA_EPS, mu=0, n_std=3
-            )
-            self.z_grid = np.exp(mc.state_values)
-            self.P = mc.P
-            self.actual_nz = self.p.N_z
-        else:
-            warnings.warn("Zero volatility or zero z states: using degenerate z grid with a single point at 1.0.")
-            self.z_grid = np.array([1.0])
-            self.P = np.array([[1.0]])
-            self.actual_nz = 1
-
-        self.k_grid = np.linspace(self.p.K_min, self.p.K_max, self.p.N_k)
-
-    def action_query_grid(self, z_t, k_t):
-        """Returns a grid of (z, k, i) points for querying the GP given current state (z_t, k_t).
-        Generally used to discretize the action space for the ExperienceReasoningAgent's policy.
-        """
-        i_grid = self.k_grid - (1 - self.p.DELTA) * k_t
-        return np.column_stack([
-            np.full_like(i_grid, z_t),
-            np.full_like(i_grid, k_t),
-            i_grid
-        ])
-
-    def production(self, z, k):
-        return z * (k ** self.p.ALPHA)
-
-    def optimal_b_next(self, k_next: float) -> float:
-        """Optimal next-period debt given k_next.
-
-        With linear utility, the net PV of a unit of debt is (1 - beta*(1+R)):
-          - beta*(1+R) <= 1: borrow at collateral constraint
-          - beta*(1+R) >  1: don't borrow
-        """
-        if self.p.BETA * (1.0 + self.p.R) <= 1.0:
-            return self.p.THETA * k_next
-        return 0.0
-
-    def dividend(self, z, k, i, b=0.0, b_next=0.0):
-        """d = f(z,k) - i - psi(i,k) + b_{t+1} - (1+R)*b_t"""
-        k_safe = max(k, 1e-8)
-        adj_cost = self.adjustment_costs(i, k_safe)
-        return self.production(z, k_safe) - i - adj_cost + b_next - (1 + self.p.R) * b
-
-    # TODO: Double check this
-    def gp_observation(self, z, k, i, b_next):
-        """Dividend corrected for debt terms for GP updates.
-
-        The GP learns Q(z,k,b,i) = GP(z,k,i) - (1+R)*b.
-        The correct GP observation target is:
-            d + (1+R)*b - beta*(1+R)*b_next = f(z,k) - i - psi(i,k) + b_next*(1 - beta*(1+R))
-        """
-        k_safe = max(k, 1e-8)
-        adj_cost = self.adjustment_costs(i, k_safe)
-        correction = b_next * (1.0 - self.p.BETA * (1.0 + self.p.R))
-        return self.production(z, k_safe) - i - adj_cost + correction
-
-    def transition(self, z, k_prime, b_next=0.0, custom_rng=None):
-        k_next = max(k_prime, 1e-8)
-        if self.p.SIGMA_EPS > 0:
-            rng = custom_rng if custom_rng is not None else self.rng
-            eps = rng.normal(0.0, self.p.SIGMA_EPS)
-            z_next = np.exp(self.p.RHO * np.log(max(z, 1e-12)) + eps)
-        else:
-            z_next = z
-        return z_next, k_next, float(b_next)
 
 
 class InvestmentAgent(ABC):
@@ -353,18 +228,19 @@ class RationalInvestmentAgent(InvestmentAgent):
 
 @dataclass
 class InvestmentAgentParameters:
-    H: float = 0.05  # exploration regularization parameter\
+    H: float = 0.05  # exploration regularization parameter
     KAPPA_R: float = 0.01
 
 
 def calibrated_entropy_regularization_parameter(env: InvestmentEnvironment, gp_params: GPBeliefParameters) -> float:
     """Calibrates h from environment primitives so the initial entropy target
     h * tr(Sigma_0) = 0.5 * ln(N_k), where tr(Sigma_0) = N_k * sigma0^2.
-    
+
         h = 0.5 * ln(N_k) / (N_k * sigma0^2)
     """
     N = env.p.N_k
     return 0.5 * np.log(N) / (N * gp_params.kernel.sigma0_sq)
+
 
 class ExperienceReasoningAgent(InvestmentAgent):
     def __init__(self, env, gp, agent_params, experience_only=False, seed=42):
@@ -442,8 +318,14 @@ class ExperienceReasoningAgent(InvestmentAgent):
         vals_E, V = np.linalg.eigh(Sigma_E)
         water_level = kappa / (self.agent_params.H * delta_E)
         vals_R = np.minimum(vals_E, water_level)
+        # check triggering 
         Sigma_R = V @ np.diag(vals_R) @ V.T
         return np.sqrt(np.maximum(np.diag(Sigma_R), 0))
+    
+    def eigenvalues(self, X_q):
+        _, Sigma_E = self.gp.predict_full(X_q)
+        vals_E, _ = np.linalg.eigh(Sigma_E)
+        return np.maximum(vals_E, 0)
 
     def policy(self, z, k, b=0.0, t=None):
         k_cands, X_q, mean, std_E = self.get_beliefs(z, k, b)

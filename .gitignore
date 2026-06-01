@@ -12,6 +12,20 @@ ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 
+# LATEX
+# =========================
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+
+
 # =========================
 # Python
 # =========================
