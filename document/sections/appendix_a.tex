@@ -1,10 +1,10 @@
 \section{Derivations} \label{sec:appendix_a}
 
-\subsection{Derivation of the Canonical Investment Model Solution}
+\subsection{Derivation of the Canonical Investment Model Solution with Capital Adjustment Costs and Collateral Constraints}
 \label{app:canonical-investment-derivation}
 
 This section derives the optimal investment condition for the firm described in
-Section~\ref{sec:investment_problem}. The firm chooses investment $i_{j,t}$ and
+\ref{sec:investment_problem}. The firm chooses investment $i_{j,t}$ and
 next-period debt $b_{j,t+1}$ to maximize discounted dividends subject to the
 capital accumulation equation and the collateral borrowing constraint.
 Let $q_{j,t}$ denote the multiplier on the capital accumulation equation and
@@ -78,6 +78,117 @@ b_{j,t+1} &\le \theta k_{j,t+1} \\
 When the constraint is slack ($\mu_{j,t}=0$), the model reduces to the standard
 Tobin's $q$ investment condition. When the constraint binds ($\mu_{j,t}>0$),
 capital carries an additional value because it relaxes the borrowing limit.
+
+\subsection{Derivation of the Firm Investment Model Solution with Partial Irreversibility \citep{AbelEberly1994, AbelEberly1996}}
+\label{app:firm-investment-partial-irreversibility}
+
+This section derives the optimal investment policy for a firm with no convex
+adjustment costs but with partial irreversibility, originally developed by
+\citet{AbelEberly1994, AbelEberly1996}. This friction is an ingredient in the
+heterogeneous-firm framework of \citet{KhanThomas2013}.
+
+Under partial irreversibility, the firm purchases capital at unit price but
+resells at price $\theta_k < 1$, giving a piecewise-linear cost with a kink at
+$i_{j,t}=0$:
+\begin{equation}
+    c(i_{j,t}) = \begin{cases}
+        i_{j,t} & \text{if } i_{j,t} \ge 0 \\
+        \theta_k \, i_{j,t} & \text{if } i_{j,t} < 0 .
+    \end{cases}
+\end{equation}
+Writing $i_{j,t} = k_{j,t+1} - (1-\delta)k_{j,t}$, the firm's problem in
+recursive form is
+\begin{equation}
+    V(z,k) = \max_{k'} \Big\{
+        f(z,k) - c\big(k' - (1-\delta)k\big)
+        + \beta \, \mathbb{E}\big[V(z',k') \mid z\big]
+    \Big\} .
+\end{equation}
+Let $q(z,k) = V_k(z,k)$, the marginal value of capital. By the envelope condition,
+$v_k(z,k) = f_k(z,k) + (1-\delta)c'(i)$ which implies $q(z,k) = f_k(z,k) + (1-\delta)c'(i)$.
+\begin{equation}
+    c'(i) = \begin{cases}
+        1 & \text{if } i > 0 \\
+        \theta_k & \text{if } i < 0 \\
+        [\theta_k, 1] & \text{if } i = 0
+    \end{cases}
+\end{equation}
+Let $\underline{k}$ solve $q(z,\underline{k}) = 1$ (buy target) and $\overline{k}$
+solve $q(z,\overline{k}) = \theta_k$ (sell target). The inaction region is
+the interval $[\underline{k}, \overline{k}]$, where the marginal value of capital
+lies between the resale and purchase prices. The optimal policy is then
+\begin{equation}
+    k' = \begin{cases}
+        \underline{k} & \text{if } (1-\delta)k < \underline{k} \\
+        (1-\delta)k & \text{if } (1-\delta)k \in [\underline{k}, \overline{k}] \\
+        \overline{k} & \text{if } (1-\delta)k > \overline{k}
+    \end{cases}
+\end{equation}
+
+Inside the inaction band the firm leaves capital untouched and lets it depreciate. 
+It acts only when a shock pushes capital to a trigger, then jumps straight to the 
+target.
+
+\subsubsection{Firm Investment with Partial Irreversibility and a Collateral Constraint \citep{KhanThomas2013}}
+\label{app:firm-investment-collateral}
+\citet{KhanThomas2013} add collateralized debt. The firm now carries two state
+variables, capital $k$ and debt $b$, and chooses both $k'$ and $b'$. Borrowing
+is limited by the resale value of pledged capital, scaled by an aggregate credit
+state $\zeta$:
+\begin{equation}
+    b' \le \zeta \, \theta_k \, k .
+\end{equation}
+Only the liquidation value $\theta_k k$ can be pledged; $\zeta$ adjusts the
+limit, and a credit shock is a fall in $\zeta$. Dividends are the residual of
+production and new borrowing, net of repayment and investment:
+\begin{equation}
+    D = z\varepsilon F(k) + p\, b' - b - c(i), \qquad D \ge 0,
+\end{equation}
+where $p$ is the bond price and $D \ge 0$ rules out equity issuance. The firm's
+problem is
+\begin{equation}
+    V(z,k,b) = \max_{k',b'} \Big\{ D + \beta \, \mathbb{E}\big[V(z',k',b') \mid z\big] \Big\},
+    \quad i = k' - (1-\delta)k,
+\end{equation}
+subject to the budget identity, $D \ge 0$, and $b' \le \zeta\theta_k k$.
+
+Attach $\lambda \ge 0$ to $D \ge 0$ and $\mu \ge 0$ to the collateral
+constraint. Then $\lambda$ is the shadow value of internal funds: when equity
+cannot be raised, a dollar inside the firm is worth $1+\lambda$. The envelope
+conditions are
+\begin{align}
+    V_k(z,k,b) &= (1+\lambda)\big[f_k(z,k) + (1-\delta)c'(i)\big] + \mu\,\zeta\theta_k, \\
+    V_b(z,k,b) &= -(1+\lambda),
+\end{align}
+and the first-order conditions for $b'$ and $k'$ are
+\begin{align}
+    (1+\lambda)\,p &= \beta\,\mathbb{E}\big[1+\lambda'\big] + \mu, \\
+    (1+\lambda)\,c'(i) &= \beta\,\mathbb{E}\big[(1+\lambda')\big(f_k(z',k') + (1-\delta)c'(i')\big) + \mu'\zeta'\theta_k\big].
+\end{align}
+Defining the adjusted marginal value of capital
+\begin{equation}
+    q(z,k') \equiv \frac{\beta}{1+\lambda}\,
+        \mathbb{E}\big[(1+\lambda')\big(f_k(z',k') + (1-\delta)c'(i')\big) + \mu'\zeta'\theta_k\big],
+\end{equation}
+the capital condition $q = c'(i)$ yields the same band as before:
+\begin{equation}
+    \theta_k \le q(z,k') \le 1, \qquad
+    \begin{cases}
+        q = 1 & i > 0 \\
+        \theta_k \le q \le 1 & i = 0 \\
+        q = \theta_k & i < 0 .
+    \end{cases}
+\end{equation}
+Complementary slackness closes the system:
+\begin{align}
+    \mu &\ge 0, \quad b' \le \zeta\theta_k k, \quad \mu\big(\zeta\theta_k k - b'\big) = 0, \\
+    \lambda &\ge 0, \quad D \ge 0, \quad \lambda D = 0 .
+\end{align}
+Relative to the irreversible problem, $q$ is weighted by
+$(1+\lambda')/(1+\lambda)$ and carries the collateral premium $\mu'\zeta'\theta_k$.
+The triggers $\underline{k}, \overline{k}$ solving $q = 1$ and $q = \theta_k$ now
+depend on $(k,b)$ through $\lambda$ and $\mu$.
+
 
 \subsection{Derivation of Optimal Action Policy \ref{prop:optimal_policy}}
 

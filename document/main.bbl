@@ -1,0 +1,186 @@
+\begin{thebibliography}{21}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Abel and Eberly(1994)]{AbelEberly1994}
+Andrew~B. Abel and Janice~C. Eberly.
+\newblock A unified model of investment under uncertainty.
+\newblock \emph{The American Economic Review}, 84\penalty0 (5):\penalty0
+  1369--1384, 1994.
+\newblock ISSN 00028282.
+\newblock URL \url{http://www.jstor.org/stable/2117777}.
+
+\bibitem[Abel and Eberly(1996)]{AbelEberly1996}
+Andrew~B. Abel and Janice~C. Eberly.
+\newblock Optimal investment with costly reversibility.
+\newblock \emph{The Review of Economic Studies}, 63\penalty0 (4):\penalty0
+  581--593, 1996.
+\newblock ISSN 00346527, 1467937X.
+\newblock URL \url{http://www.jstor.org/stable/2297794}.
+
+\bibitem[Bachmann and Bayer(2014)]{BachmannBayer2014}
+Rüdiger Bachmann and Christian Bayer.
+\newblock Investment dispersion and the business cycle.
+\newblock \emph{American Economic Review}, 104\penalty0 (4):\penalty0
+  1392–1416, April 2014.
+\newblock \doi{10.1257/aer.104.4.1392}.
+\newblock URL \url{https://www.aeaweb.org/articles?id=10.1257/aer.104.4.1392}.
+
+\bibitem[Caballero and Engel(1999)]{CaballeroEngel1999}
+Ricardo~J. Caballero and Eduardo M. R.~A. Engel.
+\newblock Explaining investment dynamics in u.s. manufacturing: A generalized
+  (s, s) approach.
+\newblock \emph{Econometrica}, 67\penalty0 (4):\penalty0 783--826, 1999.
+\newblock \doi{https://doi.org/10.1111/1468-0262.00053}.
+\newblock URL
+  \url{https://onlinelibrary.wiley.com/doi/abs/10.1111/1468-0262.00053}.
+
+\bibitem[Cooper and Haltiwanger(2006)]{CooperHaltiwanger2006}
+Russell~W. Cooper and John~C. Haltiwanger.
+\newblock On the nature of capital adjustment costs.
+\newblock \emph{The Review of Economic Studies}, 73\penalty0 (3):\penalty0
+  611--633, 07 2006.
+\newblock ISSN 0034-6527.
+\newblock \doi{10.1111/j.1467-937X.2006.00389.x}.
+\newblock URL \url{https://doi.org/10.1111/j.1467-937X.2006.00389.x}.
+
+\bibitem[Deisenroth and Rasmussen(2011)]{DeisenrothRasmussen2011}
+Marc~Peter Deisenroth and Carl~Edward Rasmussen.
+\newblock Pilco: a model-based and data-efficient approach to policy search.
+\newblock In \emph{Proceedings of the 28th International Conference on
+  International Conference on Machine Learning}, ICML'11, page 465–472,
+  Madison, WI, USA, 2011. Omnipress.
+\newblock ISBN 9781450306195.
+
+\bibitem[Doms and Dunne(1998)]{DomsDunne1998}
+Mark Doms and Timothy Dunne.
+\newblock Capital adjustment patterns in manufacturing plants.
+\newblock \emph{Review of Economic Dynamics}, 1\penalty0 (2):\penalty0
+  409--429, 1998.
+\newblock ISSN 1094-2025.
+\newblock \doi{https://doi.org/10.1006/redy.1998.0011}.
+\newblock URL
+  \url{https://www.sciencedirect.com/science/article/pii/S1094202598900114}.
+
+\bibitem[Duff(2001)]{duff2002}
+Michael~O. Duff.
+\newblock Monte-carlo algorithms for the improvement of finite-state stochastic
+  controllers: Application to bayes-adaptive markov decision processes.
+\newblock In Thomas~S. Richardson and Tommi~S. Jaakkola, editors,
+  \emph{Proceedings of the Eighth International Workshop on Artificial
+  Intelligence and Statistics}, volume~R3 of \emph{Proceedings of Machine
+  Learning Research}, pages 93--97. PMLR, 04--07 Jan 2001.
+\newblock URL \url{https://proceedings.mlr.press/r3/duff01a.html}.
+\newblock Reissued by PMLR on 31 March 2021.
+
+\bibitem[Erickson and Whited(2000)]{EricksonWhited2000}
+Timothy Erickson and Toni~M. Whited.
+\newblock Measurement error and the relationship between investment and q.
+\newblock \emph{Journal of Political Economy}, 108\penalty0 (5):\penalty0
+  1027--1057, 2000.
+\newblock ISSN 00223808, 1537534X.
+\newblock URL \url{http://www.jstor.org/stable/10.1086/317670}.
+
+\bibitem[Fazzari et~al.(1988)Fazzari, Hubbard, and
+  Petersen]{FazzariHubbardPetersen1988}
+Steven Fazzari, R.~Glenn Hubbard, and Bruce Petersen.
+\newblock Investment, financing decisions, and tax policy.
+\newblock \emph{The American Economic Review}, 78\penalty0 (2):\penalty0
+  200--205, 1988.
+\newblock ISSN 00028282.
+\newblock URL \url{http://www.jstor.org/stable/1818123}.
+
+\bibitem[Hsieh and Klenow(2009)]{HsiehKlenow2009}
+Chang-Tai Hsieh and Peter~J. Klenow.
+\newblock Misallocation and manufacturing tfp in china and india.
+\newblock \emph{The Quarterly Journal of Economics}, 124\penalty0 (4):\penalty0
+  1403--1448, None 2009.
+\newblock \doi{None}.
+\newblock URL
+  \url{https://ideas.repec.org/a/oup/qjecon/v124y2009i4p1403-1448..html}.
+
+\bibitem[Hubbard(1998)]{Hubbard1998}
+R.~Glenn Hubbard.
+\newblock Capital-market imperfections and investment.
+\newblock \emph{Journal of Economic Literature}, 36\penalty0 (1):\penalty0
+  193--225, 1998.
+\newblock ISSN 00220515.
+\newblock URL \url{http://www.jstor.org/stable/2564955}.
+
+\bibitem[Ilut and Valchev(2022)]{IlutValchev2023}
+Cosmin Ilut and Rosen Valchev.
+\newblock Economic agents as imperfect problem solvers*.
+\newblock \emph{The Quarterly Journal of Economics}, 138\penalty0 (1):\penalty0
+  313--362, 07 2022.
+\newblock ISSN 0033-5533.
+\newblock \doi{10.1093/qje/qjac027}.
+\newblock URL \url{https://doi.org/10.1093/qje/qjac027}.
+
+\bibitem[Kaplan and Zingales(1997)]{KaplanZingales1997}
+Steven~N. Kaplan and Luigi Zingales.
+\newblock Do investment-cash flow sensitivities provide useful measures of
+  financing constraints?
+\newblock \emph{The Quarterly Journal of Economics}, 112\penalty0 (1):\penalty0
+  169--215, 1997.
+\newblock ISSN 00335533, 15314650.
+\newblock URL \url{http://www.jstor.org/stable/2951280}.
+
+\bibitem[Khan and Thomas(2013)]{KhanThomas2013}
+Aubhik Khan and Julia~K. Thomas.
+\newblock Credit shocks and aggregate fluctuations in an economy with
+  production heterogeneity.
+\newblock \emph{Journal of Political Economy}, 121\penalty0 (6):\penalty0
+  1055--1107, 2013.
+\newblock ISSN 00223808, 1537534X.
+\newblock URL \url{http://www.jstor.org/stable/10.1086/674142}.
+
+\bibitem[Lamont(1997)]{Lamont1997}
+Owen Lamont.
+\newblock Cash flow and investment: Evidence from internal capital markets.
+\newblock \emph{The Journal of Finance}, 52\penalty0 (1):\penalty0 83--109,
+  1997.
+\newblock ISSN 00221082, 15406261.
+\newblock URL \url{http://www.jstor.org/stable/2329557}.
+
+\bibitem[Lucas(1978)]{Lucas1978}
+Robert~E. Lucas.
+\newblock On the size distribution of business firms.
+\newblock \emph{The Bell Journal of Economics}, 9\penalty0 (2):\penalty0
+  508--523, 1978.
+\newblock ISSN 0361915X.
+\newblock URL \url{http://www.jstor.org/stable/3003596}.
+
+\bibitem[Luttmer(2007)]{Luttmer2007}
+Erzo G.~J. Luttmer.
+\newblock Selection, growth, and the size distribution of firms.
+\newblock \emph{The Quarterly Journal of Economics}, 122\penalty0 (3):\penalty0
+  1103--1144, 2007.
+\newblock ISSN 00335533, 15314650.
+\newblock URL \url{http://www.jstor.org/stable/25098869}.
+
+\bibitem[Russo and Roy(2014)]{RussoVanRoy2014}
+Daniel Russo and Benjamin~Van Roy.
+\newblock Learning to optimize via posterior sampling, 2014.
+\newblock URL \url{https://arxiv.org/abs/1301.2609}.
+
+\bibitem[Russo and Roy(2017)]{RussoVanRoy2017}
+Daniel Russo and Benjamin~Van Roy.
+\newblock Learning to optimize via information-directed sampling, 2017.
+\newblock URL \url{https://arxiv.org/abs/1403.5556}.
+
+\bibitem[Sims(2003)]{Sims2003}
+Christopher~A. Sims.
+\newblock Implications of rational inattention.
+\newblock \emph{Journal of Monetary Economics}, 50\penalty0 (3):\penalty0
+  665--690, 2003.
+\newblock ISSN 0304-3932.
+\newblock \doi{https://doi.org/10.1016/S0304-3932(03)00029-1}.
+\newblock URL
+  \url{https://www.sciencedirect.com/science/article/pii/S0304393203000291}.
+\newblock Swiss National Bank/Study Center Gerzensee Conference on Monetary
+  Policy under Incomplete Information.
+
+\end{thebibliography}

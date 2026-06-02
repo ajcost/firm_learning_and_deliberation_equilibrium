@@ -10,27 +10,34 @@ import quantecon as qe
 
 from tqdm import tqdm
 
-
-
 @dataclass
 class InvestmentParameters:
-    ALPHA: float = 0.33 # Capital production elasticity
-    DELTA: float = 0.04 # Depreciation rate
-    R: float = 0.03     # Interest rate
-    THETA: float = 0.0  # Collateral constraint fraction (b_{t+1} <= theta * k_{t+1})
-    BETA: float = 0.96  # Discount factor (set independently of R)
-
-    # These will be set based on the scenario
-    KAPPA: float = 0.1   # Adjustment cost parameter
-    RHO: float = 0.9     # Persistence
-    SIGMA_EPS: float = 0.0 # Volatility (0 = Deterministic)
-
-    # Grid Parameters
+    ALPHA: float = 0.33 # capital elasticity in production
+    DELTA: float = 0.04 # depreciation rate
+    R: float = 0.03     # interest rate
+    BETA: float = 0.96  # discount factor (set independently of R)
+ 
+    # Frictions
+    KAPPA: float = 0.1    # quadratic adjustment cost parameter
+    THETA_K: float = 0.95 # resale price of capital (partial irreversibility)
+ 
+    # Financing
+    ZETA: float = 1.0 # credit state: fraction of collateral pledgeable (b' <= ZETA * THETA_K * k)
+    # 
+ 
+    # Idiosyncratic shock parameters
+    RHO: float = 0.9         # AR(1) persistence of log z
+    SIGMA_EPS: float = 0.0   # innovation std (0 => deterministic)
+ 
+    # Grids
     N_k: int = 100
     N_z: int = 7
     K_min: float = 0.01
     K_max: float = 20.0
-
+    B_min: float = 0.0
+    B_max: float = 10.0
+    N_b: int = 1 # 1 => debt state inert (no-debt problems)
+ 
 
 @dataclass
 class SimResult:
