@@ -10,6 +10,8 @@ import quantecon as qe
 
 from tqdm import tqdm
 
+Number = float | np.ndarray
+
 @dataclass
 class InvestmentParameters:
     ALPHA: float = 0.33 # capital elasticity in production
@@ -68,6 +70,157 @@ class QuadraticAdjustmentCosts(AdjustmentCosts):
     def __call__(self, i: float, k: float) -> float:
         k_safe = max(k, 1e-8)
         return (self.kappa / 2.0) * (i**2 / k_safe)
+    
+class Utility(ABC):
+    """Per-period utility u(c) with marginal utility and its inverse (for EGM)."""
+
+    @abstractmethod
+    def __call__(self, c: float | np.ndarray) -> float | np.ndarray:
+        """Returns u(c)."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def prime(self, c: float | np.ndarray) -> float | np.ndarray:
+        """Returns u'(c)."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def prime_inv(self, x: float | np.ndarray) -> float | np.ndarray:
+        """Returns (u')^{-1}(x)."""
+        raise NotImplementedError
+
+class CRRA(Utility):
+    """u(c) = c^(1-gamma)/(1-gamma); log if gamma == 1. u'(c) = c^(-gamma)."""
+
+    def __init__(self, gamma: float):
+        self.gamma = gamma
+
+    def __call__(self, c):
+        c = np.maximum(c, 1e-12)
+        if abs(self.gamma - 1.0) < 1e-9:
+            return np.log(c)
+        return c ** (1.0 - self.gamma) / (1.0 - self.gamma)
+
+    def prime(self, c):
+        return np.maximum(c, 1e-12) ** (-self.gamma)
+
+    def prime_inv(self, x):
+        return np.maximum(x, 1e-12) ** (-1.0 / self.gamma)
+
+
+class ProductivityProcess(ABC):
+    r"""How ``z`` is initialised and evolved. Vectorized over agents."""
+
+    @abstractmethod
+    def initial(self, *, n: int, rng: np.random.Generator) -> np.ndarray:
+        r"""Draw ``n`` initial ``z`` values (one per agent)."""
+        ...
+
+    @abstractmethod
+    def step(self, *, z: np.ndarray, rng: np.random.Generator) -> np.ndarray:
+        r"""Evolve a vector of ``z`` one period. (Identity for permanent types.)"""
+        ...
+
+    @abstractmethod
+    def grid(self) -> tuple[np.ndarray, np.ndarray]:
+        r"""Discretised support and transition matrix ``(z_grid, P)`` for VFI.
+
+        Permanent/i.i.d. processes return ``P`` = rows of the stationary dist (no persistence).
+        """
+        ...
+
+
+class PermanentType(ProductivityProcess):
+    r"""Firm draws its ``z`` once at birth from a fixed set and keeps it forever.
+
+    (Your 'high / mid / low, drawn at the beginning and that's it' case.)
+    """
+
+    def __init__(self, z_values, probs=None):
+        self.z_values = np.asarray(z_values, float)
+        k = len(self.z_values)
+        self.probs = np.full(k, 1.0 / k) if probs is None else np.asarray(probs, float)
+
+    def initial(self, *, n, rng):
+        return rng.choice(self.z_values, size=n, p=self.probs)
+
+    def step(self, *, z, rng):
+        return z                                    # permanent: never changes
+
+    def grid(self):
+        # each type is absorbing: P = identity (a firm stays its type)
+        return self.z_values, np.eye(len(self.z_values))
+
+
+class MarkovAR1(ProductivityProcess):
+    r"""Persistent log-AR(1): ``log z' = rho log z + eps``, Tauchen-discretised."""
+
+    def __init__(self, *, rho, sigma_eps, n_z, n_std=3):
+        self.rho, self.sigma_eps, self.n_z = rho, sigma_eps, n_z
+        mc = qe.markov.approximation.tauchen(n_z, rho, sigma_eps, mu=0, n_std=n_std)
+        self._z_grid = np.exp(mc.state_values)
+        self._P = mc.P
+        self._stat = self._stationary(self._P)
+
+    @staticmethod
+    def _stationary(P):
+        vals, vecs = np.linalg.eig(P.T)
+        v = np.real(vecs[:, np.argmin(np.abs(vals - 1.0))])
+        return v / v.sum()
+
+    def initial(self, *, n, rng):
+        return rng.choice(self._z_grid, size=n, p=self._stat)
+
+    def step(self, *, z, rng):
+        # continuous AR(1) update (keeps agents off-grid; env can snap for policy lookup)
+        eps = rng.normal(0.0, self.sigma_eps, size=np.shape(z))
+        return np.exp(self.rho * np.log(np.maximum(z, 1e-12)) + eps)
+
+    def grid(self):
+        return self._z_grid, self._P
+
+
+class IIDDraw(ProductivityProcess):
+    r"""``z`` redrawn i.i.d. each period from a fixed distribution (no persistence)."""
+
+    def __init__(self, z_values, probs=None):
+        self.z_values = np.asarray(z_values, float)
+        k = len(self.z_values)
+        self.probs = np.full(k, 1.0 / k) if probs is None else np.asarray(probs, float)
+
+    def initial(self, *, n, rng):
+        return rng.choice(self.z_values, size=n, p=self.probs)
+
+    def step(self, *, z, rng):
+        return rng.choice(self.z_values, size=np.shape(z), p=self.probs)   # ignores current z
+
+    def grid(self):
+        # i.i.d.: every row of P is the same draw distribution
+        return self.z_values, np.tile(self.probs, (len(self.z_values), 1))
+
+class Production(ABC):
+    r"""Pure technology :math:`z f(k)`. ``z`` is always an argument, never stored."""
+
+    @abstractmethod
+    def output(self, *, z: Number, k: Number) -> Number: ...
+    @abstractmethod
+    def marginal_product(self, *, z: Number, k: Number) -> Number: ...
+
+    def __call__(self, *, z: Number, k: Number) -> Number:
+        return self.output(z=z, k=k)
+
+
+class CapitalCobbDouglas(Production):
+    def __init__(self, alpha: float):
+        if not 0.0 < alpha < 1.0:
+            raise ValueError(f"alpha must be in (0,1), got {alpha}")
+        self.alpha = alpha
+
+    def output(self, *, z, k):
+        k = np.maximum(k, 1e-12); return z * k ** self.alpha
+
+    def marginal_product(self, *, z, k):
+        k = np.maximum(k, 1e-12); return self.alpha * z * k ** (self.alpha - 1.0)
 
 
 class InvestmentEnvironment:
@@ -91,7 +244,7 @@ class InvestmentEnvironment:
             self.P = np.array([[1.0]])
             self.actual_nz = 1
 
-        self.k_grid = np.linspace(self.p.K_min, self.p.K_max, self.p.N_k)
+        self.k_grid = np.linspace(self.p.K_MIN, self.p.K_MAX, self.p.N_k)
 
     def action_query_grid(self, z_t, k_t):
         """Returns a grid of (z, k, i) points for querying the GP given current state (z_t, k_t).

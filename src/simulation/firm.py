@@ -8,7 +8,7 @@ from scipy.interpolate import interp1d
 from scipy.optimize import brentq
 from scipy.optimize import minimize_scalar
 
-from .environment import (
+from .environment.standard_investment import (
     InvestmentParameters,
     SimResult,
     InvestmentEnvironment,
@@ -242,7 +242,13 @@ def calibrated_entropy_regularization_parameter(env: InvestmentEnvironment, gp_p
     return 0.5 * np.log(N) / (N * gp_params.kernel.sigma0_sq)
 
 
-class ExperienceReasoningAgent(InvestmentAgent):
+class ExperienceReasoningAgent(EntrepreneurAgent):
+    r"""GP-belief agent with uncertainty-driven exploration and reasoning.
+    Environment-agnostic: state/action are opaque; all domain access goes through the
+    env's generic interface (candidate_actions, featurize, gp_target). The GP learns
+    Q(features); the entropy layer sets exploration temperature from posterior uncertainty;
+    reasoning does eigenvalue water-filling on the belief covariance."""
+
     def __init__(self, env, gp, agent_params, experience_only=False, seed=42):
         super().__init__(env, name="Experience-Reasoning Agent")
         self.gp = gp
@@ -250,109 +256,90 @@ class ExperienceReasoningAgent(InvestmentAgent):
         self.experience_only = experience_only
         self.rng = np.random.default_rng(seed)
 
-    def _get_action_queries(self, z, k, b=0.0):
-        k_safe = max(k, 1e-8)
-        i_candidates = self.env.k_grid - (1.0 - self.env.p.DELTA) * k_safe
-        b_next_candidates = np.array([self.env.optimal_b_next(kp) for kp in self.env.k_grid])
-        dividends = np.array([
-            self.env.dividend(z, k_safe, i, b, bn)
-            for i, bn in zip(i_candidates, b_next_candidates)
-        ])
+    # ---- beliefs: query GP over the feasible candidate actions -----------------------
+    def get_beliefs(self, state):
+        actions = self.env.candidate_actions(state=state)          # (n, action_dim), opaque
+        X_q = self.env.featurize(state=state, actions=actions)     # (n, feature_dim)
+        mean, std = self.gp.predict(X_q, return_std=True)
+        return actions, X_q, mean, std
 
-        valid_mask = dividends >= -1e-8
-        if not np.any(valid_mask):
-            best_idx = np.argmax(dividends)
-            valid_mask[best_idx] = True
-
-        valid_k = self.env.k_grid[valid_mask]
-        valid_i = i_candidates[valid_mask]
-        X_query = np.column_stack([
-            np.full(len(valid_k), z),
-            np.full(len(valid_k), k_safe),
-            valid_i
-        ])
-        return valid_k, valid_i, X_query
-
+    # ---- entropy policy: temperature delta s.t. H(pi) = H * sum(std^2) ----------------
     def _entropy_policy(self, q, std):
-        N = len(q)
-        H_max = np.log(N)
-        lower_bound_entropy = self.agent_params.H * np.sum(std**2)
-
-        if lower_bound_entropy <= 1e-8:
-            p = np.zeros(N)
-            p[np.argmax(q)] = 1.0
+        N = len(q); H_max = np.log(N)
+        lb = self.agent_params.H * float(np.sum(std ** 2))         # uncertainty-driven entropy floor
+        if lb <= 1e-8:                                             # no uncertainty -> greedy
+            p = np.zeros(N); p[int(np.argmax(q))] = 1.0
             return p, 0.0
-
-        if lower_bound_entropy >= H_max - 1e-8:
+        if lb >= H_max - 1e-8:                                     # saturated -> uniform
             return np.ones(N) / N, np.inf
 
         def f(delta):
-            logits = q / max(delta, 1e-12)
-            logits -= np.max(logits)
-            p = np.exp(logits)
-            p /= np.sum(p)
-            return -np.sum(p * np.log(p + 1e-12)) - lower_bound_entropy
+            logits = q / max(delta, 1e-12); logits -= logits.max()
+            pp = np.exp(logits); pp /= pp.sum()
+            return -np.sum(pp * np.log(pp + 1e-12)) - lb          # entropy(delta) - floor
 
         try:
             delta_star = brentq(f, 1e-6, 1e6, maxiter=200)
         except ValueError:
             delta_star = 1e-6 if abs(f(1e-6)) < abs(f(1e6)) else 1e6
-
-        logits = q / max(delta_star, 1e-12)
-        logits -= np.max(logits)
-        p = np.exp(logits)
-        p /= np.sum(p)
-        return p, float(delta_star)  # type: ignore
-
-    def get_beliefs(self, z, k, b=0.0):
-        k_cands, _, X_q = self._get_action_queries(z, k, b)
-        mean, std = self.gp.predict(X_q, return_std=True)
-        return k_cands, X_q, mean, std
+        logits = q / max(delta_star, 1e-12); logits -= logits.max()
+        p = np.exp(logits); p /= p.sum()
+        return p, float(delta_star)
 
     def reason(self, X_q, delta_E, std_E):
         kappa = self.agent_params.KAPPA_R
         if self.experience_only or kappa <= 0 or delta_E <= 0 or self.agent_params.H <= 0:
             return std_E
-
-        _, Sigma_E = self.gp.predict_full(X_q)
+        _, Sigma_E = self.gp.predict_full(X_q)                    # full belief covariance
         vals_E, V = np.linalg.eigh(Sigma_E)
-        water_level = kappa / (self.agent_params.H * delta_E)
-        vals_R = np.minimum(vals_E, water_level)
-        # check triggering 
+        water_level = kappa / (self.agent_params.H * delta_E)     # reasoning budget
+        vals_R = np.minimum(vals_E, water_level)                  # cap high-variance directions
         Sigma_R = V @ np.diag(vals_R) @ V.T
         return np.sqrt(np.maximum(np.diag(Sigma_R), 0))
-    
+
     def eigenvalues(self, X_q):
         _, Sigma_E = self.gp.predict_full(X_q)
-        vals_E, _ = np.linalg.eigh(Sigma_E)
-        return np.maximum(vals_E, 0)
+        return np.maximum(np.linalg.eigh(Sigma_E)[0], 0)
 
-    def policy(self, z, k, b=0.0, t=None):
-        k_cands, X_q, mean, std_E = self.get_beliefs(z, k, b)
+    # ---- policy: draft (experience) -> reason -> final -> sample ---------------------
+    def policy(self, *, z=1.0, omega=None, t=None):
+        omega = self.p.OMEGA_ZERO if omega is None else omega
+        state = (z, omega)
+        actions, X_q, mean, std_E = self.get_beliefs(state)
+        _, delta_E = self._entropy_policy(mean, std_E)            # draft temperature
+        std_R = self.reason(X_q, delta_E, std_E)                 # reasoning shrinks uncertainty
+        probs_R, _ = self._entropy_policy(mean, std_R)           # final policy
+        j = self.rng.choice(len(actions), p=probs_R)
+        kp, bp = actions[j]
+        return float(kp), float(bp)
+
+    # ---- diagnostics -----------------------------------------------------------------
+    def get_greedy_action(self, *, z=1.0, omega=None):
+        omega = self.p.OMEGA_ZERO if omega is None else omega
+        actions = self.env.candidate_actions(state=(z, omega))
+        mean = self.gp.predict(self.env.featurize(state=(z, omega), actions=actions), return_std=False)
+        kp, bp = actions[int(np.argmax(mean))]
+        return float(kp), float(bp)
+
+    def get_expected_action(self, *, z=1.0, omega=None):
+        omega = self.p.OMEGA_ZERO if omega is None else omega
+        actions, X_q, mean, std_E = self.get_beliefs((z, omega))
         _, delta_E = self._entropy_policy(mean, std_E)
         std_R = self.reason(X_q, delta_E, std_E)
         probs_R, _ = self._entropy_policy(mean, std_R)
+        kp, bp = probs_R @ actions                               # probability-weighted (kp, bp)
+        return float(kp), float(bp)
 
-        chosen_idx = self.rng.choice(len(k_cands), p=probs_R)
-        k_next = float(k_cands[chosen_idx])
-        b_next = self.env.optimal_b_next(k_next)
+    def fixed_point(self, *, z=1.0):
+        og = self.env.omega_grid
+        diffs = [abs(self.omega_next(z=z, omega=float(w)) - float(w)) for w in og]
+        return float(og[int(np.argmin(diffs))])
 
-        return k_next, b_next
-
-    def get_greedy_action(self, z, k, b=0.0):
-        k_cands, _, X_q = self._get_action_queries(z, k, b)
-        mean = self.gp.predict(X_q, return_std=False)
-        k_next = float(k_cands[np.argmax(mean)])
-        return k_next, self.env.optimal_b_next(k_next)
-
-    def get_expected_action(self, z, k, b=0.0):
-        k_cands, X_q, mean, std_E = self.get_beliefs(z, k, b)
-        _, delta_E = self._entropy_policy(mean, std_E)
-        std_R = self.reason(X_q, delta_E, std_E)
-        probs_R, _ = self._entropy_policy(mean, std_R)
-        k_next = float(np.dot(probs_R, k_cands))
-        return k_next, self.env.optimal_b_next(k_next)
-
-    def fixed_point(self):
-        diffs = [abs(self.get_greedy_action(1.0, k)[0] - k) for k in self.env.k_grid]
-        return float(self.env.k_grid[np.argmin(diffs)])
+    # ---- experience update: observe one transition, teach the GP ---------------------
+    def observe(self, *, state, action, reward, rng=None):
+        r"""Feed one realized (state, action, reward) into the GP. Target from env.gp_target
+        (u(c) for the entrepreneur — no debt correction since b' is explicit)."""
+        X = self.env.featurize(state=state, actions=np.atleast_2d(action))
+        y = self.env.gp_target(state=state, action=action, reward=reward)
+        self.gp.add_observation(X, np.atleast_1d(y))
+        return self.env.transition(state=state, action=action, rng=rng)

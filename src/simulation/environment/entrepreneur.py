@@ -116,6 +116,17 @@ class EntrepreneurEnvironment:
             print(f"[calibrate] z∈[{z_nodes.min():.3f},{z_nodes.max():.3f}] "
                   f"k*∈[{ks.min():.3f},{ks.max():.3f}] ω̄∈[{wb.min():.3f},{wbar_top:.3f}]  "
                   f"K n={len(self.k_grid)} B n={len(self.b_grid)} Ω n={len(self.omega_grid)}")
+            
+    def reset_grids(self, step_size=0.1, ignore_b_grid=False, ignore_k_grid=False, ignore_omega_grid=False, verbose=False):
+        p = self.p
+        if not ignore_k_grid:
+            self.k_grid = np.arange(p.K_MIN, p.K_MAX + step_size, step_size)
+        if not ignore_b_grid:
+            self.b_grid = np.arange(p.B_MIN, p.B_MAX + step_size, step_size)
+        if not ignore_omega_grid:
+            self.omega_grid = np.arange(p.OMEGA_MIN, p.OMEGA_MAX + step_size, step_size)
+        if verbose:
+            print(f"[reset_grids] K n={len(self.k_grid)} B n={len(self.b_grid)} Ω n={len(self.omega_grid)}")
 
     def assert_grids_admit_optimum(self, tol=1e-8):
         for zz in np.atleast_1d(self.z_grid):

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
-    from .environment import InvestmentParameters, InvestmentEnvironment
+    from .environment.standard_investment import InvestmentParameters, InvestmentEnvironment
     from .firm import RationalInvestmentAgent
 
 
@@ -79,202 +79,162 @@ class TrueValueFunctionPrior(GPPrior):
             for zz, kk, ii, bn in zip(z, k, i, b_next)
         ])
         return flow + self.p.BETA * self._continuation(k_next)
-
 class Kernel(ABC):
-    """Abstract base class for GP Kernels."""
     @abstractmethod
-    def __call__(self, X1: np.ndarray, X2: np.ndarray) -> np.ndarray:
-        """Evaluate the kernel between two sets of points."""
-        pass
-
+    def __call__(self, X1: np.ndarray, X2: np.ndarray) -> np.ndarray: ...
     @abstractmethod
-    def diag(self, X: np.ndarray) -> np.ndarray:
-        """Evaluate the diagonal of the kernel matrix for a set of points."""
-        pass
+    def diag(self, X: np.ndarray) -> np.ndarray: ...
 
 
 class RBFKernel(Kernel):
-    """Squared Exponential (RBF) Kernel for infinitely differentiable, smooth functions.
-    
-    NOTE: May be susceptible to Runge's phenomenon in extrapolation.
-    """
+    r"""Squared-exponential kernel. `length_scales` length = input dimension."""
     def __init__(self, sigma0: float, length_scales: list[float]):
         self.sigma0_sq = sigma0 ** 2
-        self.length_scales = np.array(length_scales)
+        self.length_scales = np.asarray(length_scales, float)
 
-    def __call__(self, X1: np.ndarray, X2: np.ndarray) -> np.ndarray:
-        X1_scaled = np.atleast_2d(X1) / self.length_scales
-        X2_scaled = np.atleast_2d(X2) / self.length_scales
-        
-        sq_dist = (np.sum(X1_scaled**2, 1).reshape(-1, 1) + 
-                   np.sum(X2_scaled**2, 1) - 
-                   2 * np.dot(X1_scaled, X2_scaled.T))
-        
-        # Clip to 0 to prevent tiny negative numbers from float precision issues
-        sq_dist = np.maximum(sq_dist, 0.0) 
-        
-        return self.sigma0_sq * np.exp(-0.5 * sq_dist)
+    def __call__(self, X1, X2):
+        X1s = np.atleast_2d(X1) / self.length_scales
+        X2s = np.atleast_2d(X2) / self.length_scales
+        sq = (np.sum(X1s**2, 1)[:, None] + np.sum(X2s**2, 1) - 2 * X1s @ X2s.T)
+        return self.sigma0_sq * np.exp(-0.5 * np.maximum(sq, 0.0))
 
-    def diag(self, X: np.ndarray) -> np.ndarray:
-        return np.full(X.shape[0], self.sigma0_sq)
+    def diag(self, X):
+        return np.full(np.atleast_2d(X).shape[0], self.sigma0_sq)
 
 
 class LaplacianKernel(Kernel):
-    """Laplacian (Matern 1/2) Kernel. Used in original Ilut & Vachev (2023) implementation."""
+    r"""Matern-1/2 kernel (Ilut-Vachev original). `length_scales` length = input dim."""
     def __init__(self, sigma0: float, length_scales: list[float]):
         self.sigma0_sq = sigma0 ** 2
-        self.length_scales = np.array(length_scales)
+        self.length_scales = np.asarray(length_scales, float)
 
-    def __call__(self, X1: np.ndarray, X2: np.ndarray) -> np.ndarray:
-        X1_scaled = np.atleast_2d(X1) / self.length_scales
-        X2_scaled = np.atleast_2d(X2) / self.length_scales
-        
-        # Calculate L2 distance without the square (Matern 1/2)
-        sq_dist = (np.sum(X1_scaled**2, 1).reshape(-1, 1) + 
-                   np.sum(X2_scaled**2, 1) - 
-                   2 * np.dot(X1_scaled, X2_scaled.T))
-        
-        dist = np.sqrt(np.maximum(sq_dist, 0.0))
-        return self.sigma0_sq * np.exp(-dist)
+    def __call__(self, X1, X2):
+        X1s = np.atleast_2d(X1) / self.length_scales
+        X2s = np.atleast_2d(X2) / self.length_scales
+        sq = (np.sum(X1s**2, 1)[:, None] + np.sum(X2s**2, 1) - 2 * X1s @ X2s.T)
+        return self.sigma0_sq * np.exp(-np.sqrt(np.maximum(sq, 0.0)))
 
-    def diag(self, X: np.ndarray) -> np.ndarray:
-        return np.full(X.shape[0], self.sigma0_sq)
+    def diag(self, X):
+        return np.full(np.atleast_2d(X).shape[0], self.sigma0_sq)
+
 
 @dataclass
 class GPBeliefParameters:
     kernel: Kernel
-    sigma_n: float = 0.01  # observation noise std (required for stability)
+    sigma_n: float = 0.01
 
 
 class GPBelief:
-    def __init__(self, env_params: 'InvestmentParameters', gp_params: GPBeliefParameters, prior_mean_fn: Callable = None):
-        self.env_params = env_params
+    r"""Gaussian-Process Temporal-Difference belief over an action-value function Q.
+
+    The agent never observes Q; it observes the flow payoff u(c) each step, which is the
+    TD residual u = Q(decision) - gamma * Q(outcome). This class places a GP prior on Q
+    and forms the induced covariance of the *observable* residuals (the 4-term functional
+    covariance). Works for any feature dimension and any discount `gamma`.
+
+    Parameters
+    ----------
+    gamma : float
+        Per-period discount used in the TD residual. Investment: BETA. Entrepreneur:
+        disc = BETA*(1-rho_death).
+    gp_params : GPBeliefParameters
+        Kernel + observation noise.
+    input_dim : int
+        Feature-vector width (3 for (z,k,i); 4 for (z,omega,k',b')).
+    prior_mean_fn : callable, optional
+        X -> prior mean of Q at those features. Default: zero.
+    """
+
+    def __init__(self, gamma: float, gp_params: GPBeliefParameters,
+                 input_dim: int, prior_mean_fn: Callable = None):
+        self.gamma = float(gamma)
         self.gp_params = gp_params
         self.kernel = gp_params.kernel
-        
-        self.sigma_n_sq = gp_params.sigma_n ** 2 # noise variance to allow matrix inversion
-        # prior mean
-        self.prior_mean_fn = prior_mean_fn if prior_mean_fn else lambda x: np.zeros(x.shape[0])
-        
-        # history of observations (decision points, outcome points, and TD targets)
-        self.X_dec = np.empty((0, 3))
-        self.X_out = np.empty((0, 3))
-        self.Y = np.empty(0)
-        
-        # Recursive Inverse Matrices
-        self.C_inv = np.empty((0, 0))
-        self.alpha = np.empty((0,))   # The weights vector for predictions
+        self.sigma_n_sq = gp_params.sigma_n ** 2
+        self.input_dim = int(input_dim)
+        self.prior_mean_fn = prior_mean_fn if prior_mean_fn else (lambda X: np.zeros(np.atleast_2d(X).shape[0]))
 
-    def _functional_cov(self, X_dec_1, X_out_1, X_dec_2, X_out_2):
-        """
-        Evaluates the 4-term covariance between two sets of TD transitions.
-        Each transition is defined by a decision point and an outcome point.
-        """
-        beta = self.env_params.BETA
-        
-        # Delegated to the injected Kernel object
-        k_dd = self.kernel(X_dec_1, X_dec_2)
-        k_do = self.kernel(X_dec_1, X_out_2)
-        k_od = self.kernel(X_out_1, X_dec_2)
-        k_oo = self.kernel(X_out_1, X_out_2)
-        
-        return k_dd - beta * k_do - beta * k_od + (beta**2) * k_oo
-    
-    def _first_observation(self, x_dec, x_out, dividend):
-        """Initializes the GP memory with the first empirical experience."""
+        self.X_dec = np.empty((0, self.input_dim))     # decision points (s_t, a_t)
+        self.X_out = np.empty((0, self.input_dim))     # outcome points  (s_{t+1}, a_{t+1})
+        self.Y = np.empty(0)                           # observed flow payoffs u(c_t)
+        self.C_inv = np.empty((0, 0))
+        self.alpha = np.empty(0)
+
+    def _functional_cov(self, Xd1, Xo1, Xd2, Xo2):
+        g = self.gamma
+        k_dd = self.kernel(Xd1, Xd2)
+        k_do = self.kernel(Xd1, Xo2)
+        k_od = self.kernel(Xo1, Xd2)
+        k_oo = self.kernel(Xo1, Xo2)
+        return k_dd - g * k_do - g * k_od + (g ** 2) * k_oo
+
+    def _prior_residual(self, Xd, Xo):
+        r"""Prior mean of the TD residual: m(d) - γ m(o)."""
+        return self.prior_mean_fn(Xd) - self.gamma * self.prior_mean_fn(Xo)
+
+    def _first_observation(self, x_dec, x_out, flow):
         v_self = self._functional_cov(x_dec, x_out, x_dec, x_out)[0, 0]
         self.C_inv = np.array([[1.0 / (v_self + self.sigma_n_sq)]])
-        
-        self.X_dec = x_dec 
-        self.X_out = x_out
-        self.Y = np.array([dividend])
-        
-        m_0 = np.atleast_1d(self.prior_mean_fn(x_dec))[0] - self.env_params.BETA * np.atleast_1d(self.prior_mean_fn(x_out))[0]
-        self.alpha = self.C_inv @ np.array([dividend - m_0])
-    
-    def add_observation(self, x_dec, x_out, dividend, return_gain=False):
-        """
-        Incorporates a new Temporal Difference observation and recursively 
-        updates the inverse Gram matrix and weights.
-        """        
-        x_dec = np.atleast_2d(x_dec)
-        x_out = np.atleast_2d(x_out)
-        
-        if len(self.Y) == 0:
-            self._first_observation(x_dec, x_out, dividend)
-            return
-        
-        v = self._functional_cov(x_dec, x_out, self.X_dec, self.X_out).T 
-        w = self._functional_cov(x_dec, x_out, x_dec, x_out)[0, 0] + self.sigma_n_sq 
-        q = self.C_inv @ v
-        S = max(w - (v.T @ q)[0, 0], 1e-10)
-        
-        top_left = self.C_inv + (q @ q.T) / S
-        top_right = -q / S
-        bottom_left = -q.T / S
-        bottom_right = np.array([[1.0 / S]])
-        
-        self.C_inv = np.block([
-            [top_left, top_right],
-            [bottom_left, bottom_right]
-        ])
+        self.X_dec, self.X_out, self.Y = x_dec, x_out, np.array([flow])
+        m0 = float(np.ravel(self._prior_residual(x_dec, x_out))[0])
+        self.alpha = self.C_inv @ np.array([flow - m0])
 
+    def add_observation(self, x_dec, x_out, flow, return_gain=False):
+        r"""Incorporate one TD tuple: decision features, outcome features, observed flow u(c).
+        Recursively updates the inverse Gram matrix and prediction weights."""
+        x_dec = np.atleast_2d(x_dec); x_out = np.atleast_2d(x_out)
+        if len(self.Y) == 0:
+            self._first_observation(x_dec, x_out, flow)
+            return None
+
+        v = self._functional_cov(x_dec, x_out, self.X_dec, self.X_out).T
+        w = self._functional_cov(x_dec, x_out, x_dec, x_out)[0, 0] + self.sigma_n_sq
+        q = self.C_inv @ v
+        S = max(w - float((v.T @ q)[0, 0]), 1e-10)
+
+        self.C_inv = np.block([[self.C_inv + (q @ q.T) / S, -q / S],
+                               [-q.T / S,                    np.array([[1.0 / S]])]])
         self.X_dec = np.vstack([self.X_dec, x_dec])
         self.X_out = np.vstack([self.X_out, x_out])
-        self.Y = np.append(self.Y, dividend)
-        
-        M = self.prior_mean_fn(self.X_dec) - self.env_params.BETA * self.prior_mean_fn(self.X_out)
+        self.Y = np.append(self.Y, flow)
+
+        M = self._prior_residual(self.X_dec, self.X_out)
         self.alpha = self.C_inv @ (self.Y - M)
+        return (S / w) if return_gain else None
 
-        if return_gain:
-            return S / w
-
-
-    def _predict_no_observations(self, X_query, return_std):
-        """Returns the prior mean and variance when no observations have been made."""
-        prior_q = self.prior_mean_fn(X_query)
-        if return_std:
-            # Use kernel's diag method to fetch base variance
-            return prior_q, np.sqrt(self.kernel.diag(X_query))
-        return prior_q
-        
     def _k_star(self, X_q):
-        K_dq = self.kernel(self.X_dec, X_q)
-        K_oq = self.kernel(self.X_out, X_q)
-        return K_dq - self.env_params.BETA * K_oq
+        r"""Cross-covariance between Q(X_q) and the observed residuals: k(d,q) - γ k(o,q)."""
+        return self.kernel(self.X_dec, X_q) - self.gamma * self.kernel(self.X_out, X_q)
+
+    def _predict_no_observations(self, X_q, return_std):
+        prior_q = self.prior_mean_fn(X_q)
+        if return_std:
+            return prior_q, np.sqrt(self.kernel.diag(X_q))
+        return prior_q
 
     def predict(self, X_query, return_std=False):
         X_q = np.atleast_2d(X_query)
         if len(self.Y) == 0:
             return self._predict_no_observations(X_q, return_std)
-        
-        k_star = self._k_star(X_q)
-        post_mean = self.prior_mean_fn(X_q) + k_star.T @ self.alpha
-        
+        ks = self._k_star(X_q)
+        post_mean = self.prior_mean_fn(X_q) + ks.T @ self.alpha
         if not return_std:
             return post_mean
-        
-        K_qq_diag = self.kernel.diag(X_q)
-        variance_reduction = np.sum(k_star * (self.C_inv @ k_star), axis=0)
-        post_var = K_qq_diag - variance_reduction
-        return post_mean, np.sqrt(np.maximum(post_var, 0))
+        var = self.kernel.diag(X_q) - np.sum(ks * (self.C_inv @ ks), axis=0)
+        return post_mean, np.sqrt(np.maximum(var, 0))
 
     def predict_full(self, X_query):
         X_q = np.atleast_2d(X_query)
         if len(self.Y) == 0:
             return self.prior_mean_fn(X_q), self.kernel(X_q, X_q)
-        
-        k_star = self._k_star(X_q)
-        post_mean = self.prior_mean_fn(X_q) + k_star.T @ self.alpha
-        
-        K_qq = self.kernel(X_q, X_q)
-        post_cov = K_qq - k_star.T @ self.C_inv @ k_star
+        ks = self._k_star(X_q)
+        post_mean = self.prior_mean_fn(X_q) + ks.T @ self.alpha
+        post_cov = self.kernel(X_q, X_q) - ks.T @ self.C_inv @ ks
         return post_mean, post_cov
-    
+
     def reset(self):
-        """Resets the GP to its prior state, clearing all observations."""
-        self.X_dec = np.empty((0, 3))
-        self.X_out = np.empty((0, 3))
+        self.X_dec = np.empty((0, self.input_dim))
+        self.X_out = np.empty((0, self.input_dim))
         self.Y = np.empty(0)
         self.C_inv = np.empty((0, 0))
-        self.alpha = np.empty((0,))
+        self.alpha = np.empty(0)
