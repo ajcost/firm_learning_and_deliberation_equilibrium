@@ -1,0 +1,35 @@
+# Lightweight pre-commit setup: formatting + whitespace hygiene only.
+# Install once with:  pre-commit install
+# Run on everything:  pre-commit run --all-files
+#
+# This `exclude` applies to every hook below. Ruff has a second, narrower scope
+# limit of its own (src/ + tests/ only) -- see extend-exclude in pyproject.toml.
+exclude: "^(scripts/archive_code/|literature/|document/|data/|figures/)"
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=2000"]
+      # Catches a stray breakpoint()/pdb.set_trace(). Parses with ast, so it
+      # cannot handle scripts/ (IPython magics) -- same scope as ruff.
+      - id: debug-statements
+        files: "^(src|tests)/"
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.9
+    hooks:
+      # Lint + autofix (import sorting, unused imports, py-upgrades).
+      # Scoped to src/ + tests/ by pyproject.toml; scripts/ is not linted.
+      - id: ruff-check
+        args: ["--fix"]
+      # Format (the black-compatible formatter).
+      - id: ruff-format

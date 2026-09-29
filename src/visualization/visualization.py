@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-from matplotlib.axes import Axes
 import numpy as np
+from matplotlib.axes import Axes
 
-
-PALETTE = ["#014d64", "#ad2624", "#01a2d9", "#6794a7", "#76c0c1",
-           "#7a0177", "#d95f02", "#1b9e77"]
+PALETTE = ["#014d64", "#ad2624", "#01a2d9", "#6794a7", "#76c0c1", "#7a0177", "#d95f02", "#1b9e77"]
 GRAY = "#595959"
 LIGHT_GRAY = "#d4d4d4"
 BG_COLOR = "#f0f0f0"
 
 
-def style_ax(ax: Axes, title: str | None = None,
-             xlabel: str | None = None, ylabel: str | None = None) -> Axes:
+def style_ax(
+    ax: Axes, title: str | None = None, xlabel: str | None = None, ylabel: str | None = None
+) -> Axes:
     """Apply Economist house style to an axes and return it."""
     ax.set_facecolor(BG_COLOR)
 
@@ -28,8 +27,7 @@ def style_ax(ax: Axes, title: str | None = None,
     ax.tick_params(axis="both", which="both", length=0, labelsize=9, colors=GRAY)
 
     if title is not None:
-        ax.set_title(title, fontsize=13, fontweight="bold", color="#1a1a1a",
-                     loc="left", pad=10)
+        ax.set_title(title, fontsize=13, fontweight="bold", color="#1a1a1a", loc="left", pad=10)
     if xlabel is not None:
         ax.set_xlabel(xlabel, fontsize=11, color=GRAY, labelpad=8)
     if ylabel is not None:
@@ -45,6 +43,7 @@ def style_ax(ax: Axes, title: str | None = None,
 # ---------------------------------------------------------------------------
 # Generic line plot
 # ---------------------------------------------------------------------------
+
 
 def plot_lines(
     ax: Axes,
@@ -75,7 +74,8 @@ def plot_lines(
     """
     for i, line in enumerate(lines):
         ax.plot(
-            x, line["y"],
+            x,
+            line["y"],
             color=line.get("color", PALETTE[i % len(PALETTE)]),
             label=line.get("label"),
             lw=line.get("lw", 1.8),
@@ -87,14 +87,20 @@ def plot_lines(
     if hlines:
         for h in hlines:
             ax.axhline(
-                h["y"], color=h.get("color", GRAY), ls=h.get("ls", "--"),
-                alpha=h.get("alpha", 0.7), lw=h.get("lw", 1.2),
-                label=h.get("label"), zorder=1,
+                h["y"],
+                color=h.get("color", GRAY),
+                ls=h.get("ls", "--"),
+                alpha=h.get("alpha", 0.7),
+                lw=h.get("lw", 1.2),
+                label=h.get("label"),
+                zorder=1,
             )
 
     if band:
         ax.fill_between(
-            x, band["lower"], band["upper"],
+            x,
+            band["lower"],
+            band["upper"],
             color=band.get("color", PALETTE[0]),
             alpha=band.get("alpha", 0.18),
         )
@@ -105,6 +111,7 @@ def plot_lines(
 # ---------------------------------------------------------------------------
 # Histogram
 # ---------------------------------------------------------------------------
+
 
 def plot_histogram(
     ax: Axes,
@@ -123,16 +130,20 @@ def plot_histogram(
         Each dict: ``'x'`` (required), plus optional ``'label'``, ``'color'``,
         ``'lw'``, ``'ls'``, ``'alpha'``.
     """
-    ax.hist(data, bins=bins, density=True, color=LIGHT_GRAY,
-            edgecolor="white", alpha=0.85, zorder=2)
+    ax.hist(
+        data, bins=bins, density=True, color=LIGHT_GRAY, edgecolor="white", alpha=0.85, zorder=2
+    )
 
     if vlines:
         for i, v in enumerate(vlines):
             ax.axvline(
-                v["x"], color=v.get("color", PALETTE[i % len(PALETTE)]),
-                lw=v.get("lw", 2), ls=v.get("ls", "-"),
+                v["x"],
+                color=v.get("color", PALETTE[i % len(PALETTE)]),
+                lw=v.get("lw", 2),
+                ls=v.get("ls", "-"),
                 alpha=v.get("alpha", 0.85),
-                label=v.get("label"), zorder=3,
+                label=v.get("label"),
+                zorder=3,
             )
 
     return style_ax(ax, title=title, xlabel=xlabel, ylabel=ylabel)
@@ -141,6 +152,7 @@ def plot_histogram(
 # ---------------------------------------------------------------------------
 # Phase diagram
 # ---------------------------------------------------------------------------
+
 
 def plot_phase(
     ax: Axes,
@@ -154,21 +166,25 @@ def plot_phase(
     """Economist-style k vs k' phase diagram on a provided axes."""
     if not isinstance(policies, list):
         policies = [policies]
-    labels = labels or [f"Policy {i+1}" for i in range(len(policies))]
+    labels = labels or [f"Policy {i + 1}" for i in range(len(policies))]
     colors = colors or PALETTE
 
-    ax.plot(k_grid, k_grid, color=LIGHT_GRAY, ls="--", lw=1,
-            label=r"$k' = k$", zorder=1)
+    ax.plot(k_grid, k_grid, color=LIGHT_GRAY, ls="--", lw=1, label=r"$k' = k$", zorder=1)
 
     for i, pol in enumerate(policies):
-        ax.plot(k_grid, pol, color=colors[i % len(colors)], lw=2.2,
-                label=labels[i], zorder=2 + i)
+        ax.plot(k_grid, pol, color=colors[i % len(colors)], lw=2.2, label=labels[i], zorder=2 + i)
 
     if fixed_points is not None:
         for i, fp in enumerate(fixed_points):
-            ax.scatter(fp, fp, color=colors[i % len(colors)], s=40,
-                       edgecolor="white", linewidth=0.8,
-                       zorder=3 + len(policies) + i)
+            ax.scatter(
+                fp,
+                fp,
+                color=colors[i % len(colors)],
+                s=40,
+                edgecolor="white",
+                linewidth=0.8,
+                zorder=3 + len(policies) + i,
+            )
 
     return style_ax(ax, title=title, xlabel=r"$k_t$", ylabel=r"$k_{t+1}$")
 
@@ -176,6 +192,7 @@ def plot_phase(
 # ---------------------------------------------------------------------------
 # Clustered policy plot
 # ---------------------------------------------------------------------------
+
 
 def plot_clustered_policies(
     ax: Axes,
@@ -193,11 +210,17 @@ def plot_clustered_policies(
     colors = colors or PALETTE[:n_clusters]
 
     if rational_policy is not None:
-        ax.plot(eval_k_grid, rational_policy, color=GRAY, ls="--", lw=2,
-                label=r"Rational $\mathbb{E}[k'|k]$", zorder=3)
+        ax.plot(
+            eval_k_grid,
+            rational_policy,
+            color=GRAY,
+            ls="--",
+            lw=2,
+            label=r"Rational $\mathbb{E}[k'|k]$",
+            zorder=3,
+        )
 
-    ax.plot(eval_k_grid, eval_k_grid, color=LIGHT_GRAY, ls=":", lw=1,
-            label=r"$k' = k$", zorder=1)
+    ax.plot(eval_k_grid, eval_k_grid, color=LIGHT_GRAY, ls=":", lw=1, label=r"$k' = k$", zorder=1)
 
     for idx, c in enumerate(unique_clusters):
         mask = cluster_labels == c
@@ -206,13 +229,26 @@ def plot_clustered_policies(
         n_in = int(mask.sum())
         color = colors[idx % len(colors)]
 
-        ax.plot(eval_k_grid, avg, color=color, lw=2.2,
-                label=f"Group {chr(65 + idx)} (N={n_in})", zorder=2)
-        ax.fill_between(eval_k_grid, avg - std, avg + std,
-                        color=color, alpha=0.15)
+        ax.plot(
+            eval_k_grid,
+            avg,
+            color=color,
+            lw=2.2,
+            label=f"Group {chr(65 + idx)} (N={n_in})",
+            zorder=2,
+        )
+        ax.fill_between(eval_k_grid, avg - std, avg + std, color=color, alpha=0.15)
 
     if k_ss is not None:
-        ax.scatter([k_ss], [k_ss], color="#1a1a1a", s=50, edgecolor="white",
-                   linewidth=0.8, zorder=5, label=f"$k^*={k_ss:.1f}$")
+        ax.scatter(
+            [k_ss],
+            [k_ss],
+            color="#1a1a1a",
+            s=50,
+            edgecolor="white",
+            linewidth=0.8,
+            zorder=5,
+            label=f"$k^*={k_ss:.1f}$",
+        )
 
     return style_ax(ax, title=title, xlabel=r"$k_t$", ylabel=r"$k_{t+1}$")

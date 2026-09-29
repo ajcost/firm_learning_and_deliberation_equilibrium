@@ -145,3 +145,8 @@ notes/
 # Sphinx documentation
 /docs/_build/
 /docs/generated/
+# pytest
+.pytest_cache/
+
+# ruff
+.ruff_cache/

@@ -1,18 +1,13 @@
-"""investment_elements.py — reusable model primitives.
-
-Building blocks shared across environments: utility, production technology, capital
-adjustment costs, productivity processes (how z evolves), and death/exit processes.
-Each is a small ABC with concrete implementations, composed by the environments.
-All stochastic methods take an explicit rng for replicability; nothing stores mutable z.
-"""
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import Union
 
 import numpy as np
 import quantecon as qe
 
-Number = float | np.ndarray
+Number = Union[float, np.ndarray]
+
 
 class Utility(ABC):
     """Per-period utility u(c) with marginal utility and its inverse (for EGM)."""
@@ -32,6 +27,7 @@ class Utility(ABC):
         """(u')^{-1}(x)."""
         ...
 
+
 class CRRA(Utility):
     """u(c) = c^(1-gamma)/(1-gamma); log if gamma == 1. u'(c) = c^(-gamma)."""
 
@@ -50,6 +46,7 @@ class CRRA(Utility):
     def prime_inv(self, x: Number) -> Number:
         return np.maximum(x, 1e-12) ** (-1.0 / self.gamma)
 
+
 class Production(ABC):
     r"""Pure technology :math:`z f(k)`."""
 
@@ -66,6 +63,7 @@ class Production(ABC):
     def __call__(self, *, z: Number, k: Number) -> Number:
         return self.output(z=z, k=k)
 
+
 class CapitalCobbDouglas(Production):
     r""":math:`z f(k) = z k^{\alpha}`, :math:`\alpha \in (0,1)`."""
 
@@ -76,11 +74,12 @@ class CapitalCobbDouglas(Production):
 
     def output(self, *, z: Number, k: Number) -> Number:
         k = np.maximum(k, 1e-12)
-        return z * k ** self.alpha
+        return z * k**self.alpha
 
     def marginal_product(self, *, z: Number, k: Number) -> Number:
         k = np.maximum(k, 1e-12)
         return self.alpha * z * k ** (self.alpha - 1.0)
+
 
 class AdjustmentCosts(ABC):
     @abstractmethod
@@ -88,9 +87,11 @@ class AdjustmentCosts(ABC):
         r"""Cost :math:`\psi(i, k)` of investing ``i`` at capital ``k``."""
         ...
 
+
 class NoAdjustmentCosts(AdjustmentCosts):
     def __call__(self, *, i: Number, k: Number) -> Number:
         return np.zeros_like(np.asarray(i, float))
+
 
 class QuadraticAdjustmentCosts(AdjustmentCosts):
     r""":math:`\psi(i,k) = \tfrac{\kappa}{2}\, i^2 / k`."""
@@ -101,6 +102,7 @@ class QuadraticAdjustmentCosts(AdjustmentCosts):
     def __call__(self, *, i: Number, k: Number) -> Number:
         k_safe = np.maximum(k, 1e-8)
         return (self.kappa / 2.0) * (np.asarray(i, float) ** 2 / k_safe)
+
 
 class Productivity(ABC):
     r"""How ``z`` is initialised and evolved. Vectorized over agents; rng is explicit."""
@@ -198,16 +200,25 @@ class DeathProcess(ABC):
         r"""Per-period survival probability :math:`1-\rho`, used in the discount factor."""
         ...
 
+
 class NoDeath(DeathProcess):
-    def draw(self, *, n, rng): return np.zeros(n, dtype=bool)
+    def draw(self, *, n, rng):
+        return np.zeros(n, dtype=bool)
+
     @property
-    def survival_rate(self) -> float: return 1.0
+    def survival_rate(self) -> float:
+        return 1.0
+
 
 class ConstantHazard(DeathProcess):
     def __init__(self, rho_death: float):
         if not 0.0 <= rho_death < 1.0:
             raise ValueError(f"rho_death must be in [0,1), got {rho_death}")
         self.rho_death = rho_death
-    def draw(self, *, n, rng): return rng.uniform(0.0, 1.0, size=n) < self.rho_death
+
+    def draw(self, *, n, rng):
+        return rng.uniform(0.0, 1.0, size=n) < self.rho_death
+
     @property
-    def survival_rate(self) -> float: return 1.0 - self.rho_death
+    def survival_rate(self) -> float:
+        return 1.0 - self.rho_death

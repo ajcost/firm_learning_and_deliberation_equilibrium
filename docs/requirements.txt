@@ -1,0 +1,4 @@
+# Docs build only. The scientific stack is mocked in source/conf.py
+# (autodoc_mock_imports), so nothing from src/ needs installing here.
+sphinx>=8
+furo>=2024.8

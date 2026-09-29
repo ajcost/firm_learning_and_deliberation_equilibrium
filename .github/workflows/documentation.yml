@@ -1,0 +1,49 @@
+name: documentation
+
+on:
+  push:
+    branches:
+      - main # Trigger on direct pushes or merges to main
+  pull_request:
+    branches:
+      - main # Trigger on pull requests targeting main
+  workflow_dispatch: # Allows manual triggering of the workflow
+
+permissions:
+  contents: write
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: docs/requirements.txt
+
+      - name: Install documentation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r docs/requirements.txt
+
+      - name: Sphinx build
+        # -W turns warnings into errors, so a broken reference or an unimportable
+        # module fails the build instead of quietly producing an incomplete page.
+        run: |
+          sphinx-build --version
+          cd ./docs
+          make clean
+          make html SPHINXOPTS="-W --keep-going"
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          publish_branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/_build/html
+          force_orphan: true

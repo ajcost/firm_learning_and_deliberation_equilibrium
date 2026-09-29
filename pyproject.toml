@@ -1,0 +1,52 @@
+# Tooling config only -- this project is run from the repo root (see pytest.ini),
+# it is not packaged/installed, so there is no [project] table here.
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+# Ruff governs the library and the test suite only.
+#
+# scripts/ is deliberately out of scope: those are interactive drivers and
+# scratch -- cell-style top-level code, IPython magics (%matplotlib) that are
+# not even valid Python, and `from ... import *` to pull a model namespace in.
+# Gating them on a linter buys nothing. The whitespace/large-file hooks in
+# .pre-commit-config.yaml still apply there.
+extend-exclude = [
+    "scripts",
+    "literature",
+    "document",
+    "data",
+    "figures",
+    "*.ipynb",
+]
+
+[tool.ruff.lint]
+select = [
+    "E4",   # imports (bad placement, etc.)
+    "E7",   # statement-level mistakes (ambiguous names, comparisons to True/None)
+    "E9",   # syntax / IO errors
+    "F",    # pyflakes: undefined names, unused imports/variables
+    "I",    # isort: import ordering + grouping
+    "W",    # whitespace (trailing whitespace, no newline at EOF)
+    "UP",   # pyupgrade: modernize syntax for the target version
+]
+ignore = [
+    "E741",  # ambiguous single-letter names (l, I, O) -- common in math code
+    "E701",  # multiple statements on one line (colon)    -- the formatter handles these
+    "E702",  # multiple statements on one line (semicolon) --  "
+    "E703",  # useless trailing semicolon                  --  "
+    "E731",  # assigning a lambda to a name -- idiomatic for small math helpers
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Re-exports in package __init__ files are intentional, not unused imports.
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true

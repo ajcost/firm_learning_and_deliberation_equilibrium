@@ -1,36 +1,36 @@
 from __future__ import annotations
 
+import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-import warnings
 
 import numpy as np
 import pandas as pd
 import quantecon as qe
-
 from tqdm import tqdm
 
 Number = float | np.ndarray
 
+
 @dataclass
 class InvestmentParameters:
-    ALPHA: float = 0.33 # capital elasticity in production
-    DELTA: float = 0.04 # depreciation rate
-    R: float = 0.03     # interest rate
+    ALPHA: float = 0.33  # capital elasticity in production
+    DELTA: float = 0.04  # depreciation rate
+    R: float = 0.03  # interest rate
     BETA: float = 0.96  # discount factor (set independently of R)
- 
+
     # Frictions
-    KAPPA: float = 0.1    # quadratic adjustment cost parameter
-    THETA_K: float = 0.95 # resale price of capital (partial irreversibility)
- 
+    KAPPA: float = 0.1  # quadratic adjustment cost parameter
+    THETA_K: float = 0.95  # resale price of capital (partial irreversibility)
+
     # Financing
-    ZETA: float = 1.0 # credit state: fraction of collateral pledgeable (b' <= ZETA * THETA_K * k)
-    # 
- 
+    ZETA: float = 1.0  # credit state: fraction of collateral pledgeable (b' <= ZETA * THETA_K * k)
+    #
+
     # Idiosyncratic shock parameters
-    RHO: float = 0.9         # AR(1) persistence of log z
-    SIGMA_EPS: float = 0.0   # innovation std (0 => deterministic)
- 
+    RHO: float = 0.9  # AR(1) persistence of log z
+    SIGMA_EPS: float = 0.0  # innovation std (0 => deterministic)
+
     # Grids
     N_k: int = 100
     N_z: int = 7
@@ -38,8 +38,8 @@ class InvestmentParameters:
     K_max: float = 20.0
     B_min: float = 0.0
     B_max: float = 10.0
-    N_b: int = 1 # 1 => debt state inert (no-debt problems)
- 
+    N_b: int = 1  # 1 => debt state inert (no-debt problems)
+
 
 @dataclass
 class SimResult:
@@ -59,9 +59,11 @@ class AdjustmentCosts(ABC):
         """Returns psi(i, k)."""
         raise NotImplementedError
 
+
 class NoAdjustmentCosts(AdjustmentCosts):
     def __call__(self, i: float, k: float) -> float:
         return 0.0
+
 
 class QuadraticAdjustmentCosts(AdjustmentCosts):
     def __init__(self, kappa: float):
@@ -70,7 +72,8 @@ class QuadraticAdjustmentCosts(AdjustmentCosts):
     def __call__(self, i: float, k: float) -> float:
         k_safe = max(k, 1e-8)
         return (self.kappa / 2.0) * (i**2 / k_safe)
-    
+
+
 class Utility(ABC):
     """Per-period utility u(c) with marginal utility and its inverse (for EGM)."""
 
@@ -88,6 +91,7 @@ class Utility(ABC):
     def prime_inv(self, x: float | np.ndarray) -> float | np.ndarray:
         """Returns (u')^{-1}(x)."""
         raise NotImplementedError
+
 
 class CRRA(Utility):
     """u(c) = c^(1-gamma)/(1-gamma); log if gamma == 1. u'(c) = c^(-gamma)."""
@@ -145,7 +149,7 @@ class PermanentType(ProductivityProcess):
         return rng.choice(self.z_values, size=n, p=self.probs)
 
     def step(self, *, z, rng):
-        return z                                    # permanent: never changes
+        return z  # permanent: never changes
 
     def grid(self):
         # each type is absorbing: P = identity (a firm stays its type)
@@ -192,11 +196,12 @@ class IIDDraw(ProductivityProcess):
         return rng.choice(self.z_values, size=n, p=self.probs)
 
     def step(self, *, z, rng):
-        return rng.choice(self.z_values, size=np.shape(z), p=self.probs)   # ignores current z
+        return rng.choice(self.z_values, size=np.shape(z), p=self.probs)  # ignores current z
 
     def grid(self):
         # i.i.d.: every row of P is the same draw distribution
         return self.z_values, np.tile(self.probs, (len(self.z_values), 1))
+
 
 class Production(ABC):
     r"""Pure technology :math:`z f(k)`. ``z`` is always an argument, never stored."""
@@ -217,14 +222,18 @@ class CapitalCobbDouglas(Production):
         self.alpha = alpha
 
     def output(self, *, z, k):
-        k = np.maximum(k, 1e-12); return z * k ** self.alpha
+        k = np.maximum(k, 1e-12)
+        return z * k**self.alpha
 
     def marginal_product(self, *, z, k):
-        k = np.maximum(k, 1e-12); return self.alpha * z * k ** (self.alpha - 1.0)
+        k = np.maximum(k, 1e-12)
+        return self.alpha * z * k ** (self.alpha - 1.0)
 
 
 class InvestmentEnvironment:
-    def __init__(self, params: InvestmentParameters, adjustment_costs: AdjustmentCosts, seed: int = 42):
+    def __init__(
+        self, params: InvestmentParameters, adjustment_costs: AdjustmentCosts, seed: int = 42
+    ):
         self.p = params
         self.adjustment_costs = adjustment_costs
         self.rng = np.random.default_rng(seed)
@@ -239,7 +248,9 @@ class InvestmentEnvironment:
             self.P = mc.P
             self.actual_nz = self.p.N_z
         else:
-            warnings.warn("Zero volatility or zero z states: using degenerate z grid with a single point at 1.0.")
+            warnings.warn(
+                "Zero volatility or zero z states: using degenerate z grid with a single point at 1.0."
+            )
             self.z_grid = np.array([1.0])
             self.P = np.array([[1.0]])
             self.actual_nz = 1
@@ -251,14 +262,10 @@ class InvestmentEnvironment:
         Generally used to discretize the action space for the ExperienceReasoningAgent's policy.
         """
         i_grid = self.k_grid - (1 - self.p.DELTA) * k_t
-        return np.column_stack([
-            np.full_like(i_grid, z_t),
-            np.full_like(i_grid, k_t),
-            i_grid
-        ])
+        return np.column_stack([np.full_like(i_grid, z_t), np.full_like(i_grid, k_t), i_grid])
 
     def production(self, z, k):
-        return z * (k ** self.p.ALPHA)
+        return z * (k**self.p.ALPHA)
 
         def optimal_b_next(self, k_next: float) -> float:
             """Optimal next-period debt given k_next.
@@ -300,6 +307,7 @@ class InvestmentEnvironment:
             z_next = z
         return z_next, k_next, float(b_next)
 
+
 def _eig_summary(eigs):
     return {
         "eig_max": eigs[-1],
@@ -310,7 +318,10 @@ def _eig_summary(eigs):
         "eig_n_active": int((eigs > 1e-10).sum()),
     }
 
-def run_simulation(env, agents: list, T: int = 100, z0: float = 1.0, firm_exit_rate: float = 0.0, seed: int = 0) -> pd.DataFrame:
+
+def run_simulation(
+    env, agents: list, T: int = 100, z0: float = 1.0, firm_exit_rate: float = 0.0, seed: int = 0
+) -> pd.DataFrame:
     from .firm import RationalInvestmentAgent
 
     p = env.p
@@ -333,7 +344,6 @@ def run_simulation(env, agents: list, T: int = 100, z0: float = 1.0, firm_exit_r
         did_reset = False
 
         for t in range(T):
-
             kp_t, b_next = agent_j.policy(z_t, k_t, b_t)
             i_t = kp_t - (1.0 - p.DELTA) * k_t
             d_t = env.dividend(z_t, k_t, i_t, b_t, b_next)
@@ -359,20 +369,27 @@ def run_simulation(env, agents: list, T: int = 100, z0: float = 1.0, firm_exit_r
             alpha_gain = agent_j.gp.add_observation(x_dec, x_out, gp_obs_t, return_gain=True)
 
             # Record everything on same period
-            records.append({
-                "agent_id": j,
-                "t": t,
-                "z": z_t,
-                "k": k_t, "i": i_t, "d": d_t, "q_chosen": q_chosen,
-                "k_rat": k_rat, "i_rat": i_rat, "d_rat": d_rat,
-                "reset": int(did_reset),
-                "delta_E": delta_E,
-                "alpha_gain": alpha_gain,
-                **_eig_summary(eigs),
-            })
+            records.append(
+                {
+                    "agent_id": j,
+                    "t": t,
+                    "z": z_t,
+                    "k": k_t,
+                    "i": i_t,
+                    "d": d_t,
+                    "q_chosen": q_chosen,
+                    "k_rat": k_rat,
+                    "i_rat": i_rat,
+                    "d_rat": d_rat,
+                    "reset": int(did_reset),
+                    "delta_E": delta_E,
+                    "alpha_gain": alpha_gain,
+                    **_eig_summary(eigs),
+                }
+            )
 
             # Firm exit
-            did_reset = firm_exit_on and exit_[t] # type: ignore
+            did_reset = firm_exit_on and exit_[t]  # type: ignore
             if did_reset:
                 agent_j.gp.reset()
 
