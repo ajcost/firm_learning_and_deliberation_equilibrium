@@ -1,24 +1,5 @@
-Experience and Reasoning
+Experience and Reasoning Agent
 ========================
-
-Documentation for the simulation code in ``src/``: an entrepreneur who learns about the
-action-value function :math:`Q` through two channels at once.
-
-It **experiences** — every period it lives through is filed as a GPTD observation against a
-Gaussian-process belief. It **reasons** — a planner prices the contrasts on the menu it faces,
-and an oracle answers the ones worth buying. One belief absorbs both, which makes the two
-channels substitutes for the same posterior. Choice is made under an entropy floor, so how
-sharply the agent can act is tied to how much it knows.
-
-These pages are generated from the docstrings in the source. Each module's own documentation
-is the authoritative description of what it does and of the mathematics it implements; this
-site is a rendering of it, not a second account.
-
-How the code is laid out
-------------------------
-
-The package is organised as a strict dependency graph, checked by the test suite rather than
-left to convention:
 
 .. code-block:: text
 
