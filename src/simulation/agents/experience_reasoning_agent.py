@@ -46,8 +46,8 @@ class ExperienceReasoningAgent(Agent):
             int: Number of signals bought.
         """
         for s in signals:
-            y = self.oracle.query(points, s.w, s.noise, self.rng)
-            self.belief.add_functional(X=points, w=s.w, y=y, noise=s.noise)
+            r = self.oracle.query(points, s.w, s.noise, self.rng)
+            self.belief.add_functional(X=points, w=s.w, r=r, noise=s.noise)
         return len(signals)
 
     def act(self, state, *, reason: bool = True):
