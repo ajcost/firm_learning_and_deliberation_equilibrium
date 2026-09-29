@@ -1,9 +1,13 @@
+"""Common kernel functions for GPs used to calculate covariance matrices."""
+
 from abc import ABC, abstractmethod
 
 import numpy as np
 
 
 class Kernel(ABC):
+    r"""Abstract base class for kernel functions used in Gaussian Processes."""
+
     @abstractmethod
     def __call__(self, X1: np.ndarray, X2: np.ndarray) -> np.ndarray: ...
     @abstractmethod
@@ -11,7 +15,17 @@ class Kernel(ABC):
 
 
 class RBFKernel(Kernel):
-    r"""Squared-exponential kernel. `length_scales` length = input dimension."""
+    r"""Squared-exponential kernel. `length_scales` length = input dimension. Callable as ``k(X1, X2)``.
+
+    .. math::
+        k(X_1, X_2) = \sigma_0^2 \exp\left(-\frac{1}{2} \sum_{d} \frac{(X_{1d} - X_{2d})^2}{\ell_d^2}\right)
+
+    where :math:`\ell_d` is the length scale for the :math:`d`-th input dimension.
+
+    Args:
+        sigma0 (float): Signal variance.
+        length_scales (list[float]): Length scales for each input dimension.
+    """
 
     def __init__(self, sigma0: float, length_scales: list[float]):
         self.sigma0_sq = sigma0**2
@@ -28,7 +42,17 @@ class RBFKernel(Kernel):
 
 
 class LaplacianKernel(Kernel):
-    r"""Matern-1/2 kernel (Ilut-Vachev original). `length_scales` length = input dim."""
+    r"""Laplacian kernel. `length_scales` length = input dimension. Callable as ``k(X1, X2)``.
+
+    .. math::
+        k(X_1, X_2) = \sigma_0^2 \exp\left(-\sqrt{\sum_{d} \frac{(X_{1d} - X_{2d})^2}{\ell_d^2}}\right)
+
+    where :math:`\ell_d` is the length scale for the :math:`d`-th input dimension.
+
+    Args:
+        sigma0 (float): Signal variance.
+        length_scales (list[float]): Length scales for each input dimension.
+    """
 
     def __init__(self, sigma0: float, length_scales: list[float]):
         self.sigma0_sq = sigma0**2
