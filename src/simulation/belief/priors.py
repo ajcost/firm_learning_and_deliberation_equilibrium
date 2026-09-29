@@ -1,10 +1,15 @@
+"""Module for computing prior means to initialize the GP."""
+
 from abc import ABC, abstractmethod
+from warnings import deprecated
 
 import numpy as np
 from scipy.interpolate import interp1d
 
 
 class PriorMean(ABC):
+    r"""Abstract base class for prior mean functions."""
+
     def __init__(self, env):
         self.p = env.p
         self.env = env
@@ -26,11 +31,18 @@ class PriorMean(ABC):
 
 
 class ZeroPrior(PriorMean):
+    """Trivial prior mean, zero continuation."""
+
     def _continuation(self, k_next):
         return np.zeros_like(k_next)
 
 
+@deprecated(
+    "PerpetuityPrior targets the investment environment (z, k, i); use entrepreneur priors instead."
+)
 class PerpetuityPrior(PriorMean):
+    """Perpetuity prior mean, continuation value under heuristic holding fixed capital forever."""
+
     def _continuation(self, k_next):
         k_safe = np.maximum(k_next, 1e-8)
         i_maint = self.p.DELTA * k_safe
@@ -42,29 +54,17 @@ class PerpetuityPrior(PriorMean):
 class VFIPrior(PriorMean):
     r"""Prior mean of :math:`Q(z, \omega, k', b')` from a solved VFI agent.
 
-    Bellman decomposition with the stochastic continuation:
-
     .. math::
-        Q(z, \omega, k', b') = u(c) + \gamma\, \mathbb{E}\big[V(z', \omega') \mid z\big]
-                             = u(c) + \gamma \sum_j P_{iz(z), j}\, V_j(\omega'),
+        Q(z, \omega, k', b') = u(c) + \gamma \sum_{j} P_{i(z),\, j}\, V_j(\omega'),
+        \qquad c = \omega + b' - k', \quad \omega' = z f(k') + (1-\delta)k' - (1+R)b'.
 
-    with :math:`c = \omega + b' - k'` and :math:`\omega' = z f(k') + (1-\delta)k' - (1+R)b'`.
-    Evaluated by ``vfi.action_value``; this wrapper only freezes the two options into a
-    ``prior_mean_fn`` the GP can call.
+    Wraps ``vfi.action_value`` as a ``prior_mean_fn`` for the GP.
 
     Args:
-        vfi (VFIEntrepreneurAgent): Fitted agent; provides ``V`` on ``(z_grid, omega_grid)``
-            and ``env.P``.
-        gamma (float, optional): Continuation discount. Defaults to the environment's
-            ``disc = BETA * (1 - rho)``.
-        prior_z_index (int, optional): If set, the continuation conditions on
-            ``z_grid[prior_z_index]`` instead of the query's ``z``: the agent is endowed with
-            beliefs calibrated to that type while living at its real ``z`` (the flow and
-            :math:`\omega'` still use the actual query ``z``). ``None`` (default) gives the
-            correct prior.
-
-    Returns:
-        callable: ``X -> prior mean of Q`` on rows ``(z, omega, k', b')``.
+        vfi (VFIEntrepreneurAgent): Fitted agent supplying ``V`` and ``env.P``.
+        gamma (float, optional): Discount :math:`\gamma`; defaults to ``env.p.disc``.
+        prior_z_index (int, optional): Condition the continuation on ``z_grid[prior_z_index]``
+            rather than the query's ``z`` (a mis-calibrated type prior). ``None`` is correct.
     """
 
     def __init__(self, rational_agent):

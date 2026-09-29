@@ -1,10 +1,11 @@
 Belief
 ======
 
-The posterior over the action-value function :math:`Q`, updated by both channels the agent
-learns through.
+This module contains implementation of Gaussian-Process learning for experience
+and reasoning agents, common kernel functions, and a module for computing prior means
+to initialize the GP.
 
-GP belief
+Gaussian Process
 ---------
 
 .. automodule:: src.simulation.belief.gp
@@ -20,7 +21,7 @@ Kernels
    :undoc-members:
    :show-inheritance:
 
-Prior means
+Prior Means
 -----------
 
 .. automodule:: src.simulation.belief.priors
