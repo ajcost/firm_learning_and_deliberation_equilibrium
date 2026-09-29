@@ -1,15 +1,11 @@
 Experience and Reasoning Agent
-========================
+==============================
 
 .. code-block:: text
 
    belief/  reasoning/  environment/    three leaves; none may import another
    agents/                              may import all three
    driver                               may import agents + environment
-
-The point is that a single period can be reasoned about one layer at a time: the planner
-cannot quietly start reading the belief, and the environment cannot start asking what the
-agent believes.
 
 :doc:`api/belief`
    The posterior over :math:`Q`, its kernels, and its prior means.
