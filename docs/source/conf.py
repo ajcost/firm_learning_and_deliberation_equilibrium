@@ -1,4 +1,3 @@
-import os
 import sys
 from pathlib import Path
 
@@ -41,7 +40,9 @@ autodoc_mock_imports = [
     "cycler",
 ]
 
-templates_path = ["_templates"]
+# Both live in docs/, one level up from this file; Sphinx resolves them relative to the
+# config directory, so they need the "../" rather than an absolute path.
+templates_path = ["../_templates"]
 
 html_theme = "furo"
-html_static_path = [os.path.abspath(os.path.join(__file__, "..", "..", "_static"))]
+html_static_path = ["../_static"]

@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 from scipy.interpolate import UnivariateSpline
 
-from src.simulation.environment import QuadraticAdjustmentCosts
+from src.simulation.environment.investment_elements import QuadraticAdjustmentCosts
 from src.simulation.firm import *
-from src.simulation.gaussian_process import *
+from src.simulation.belief import *
 
 # ── Solve model ──────────────────────────────────────────────
 p = InvestmentParameters(

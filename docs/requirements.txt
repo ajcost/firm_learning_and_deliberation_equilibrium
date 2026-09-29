@@ -1,4 +1,8 @@
 # Docs build only. The scientific stack is mocked in source/conf.py
 # (autodoc_mock_imports), so nothing from src/ needs installing here.
-sphinx>=8
+#
+# Majors are capped so CI cannot silently resolve a newer Sphinx than the one a local
+# `make html` was checked against -- the build runs with -W, so a new warning is a
+# failed build.
+sphinx>=8,<10
 furo>=2024.8

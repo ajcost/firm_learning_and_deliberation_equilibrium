@@ -27,7 +27,7 @@
 %%     \renewcommand{\normalsize}{\fontsize{10.000000}{12.000000}\selectfont}
 %%     \normalsize
 %%   }
-%%   
+%%
 %%   \ifdefined\pdftexversion\else  % non-pdftex case.
 %%     \usepackage{fontspec}
 %%     \setmainfont{DejaVuSerif.ttf}[Path=\detokenize{/opt/miniconda3/lib/python3.12/site-packages/matplotlib/mpl-data/fonts/ttf/}]

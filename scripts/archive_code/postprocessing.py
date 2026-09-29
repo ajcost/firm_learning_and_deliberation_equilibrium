@@ -1,3 +1,17 @@
+"""ARCHIVED — dead code, kept only for the clustering idea.
+
+Written against the pre-entrepreneur agent API and never ported. Every call in here targets
+something that no longer exists:
+
+    agent.get_expected_action(z=, k=, b=)   -> now `expected(state)` over (z, omega)
+    agent.gp                                -> now `agent.belief`
+    features [[z, k, i]]                    -> now (z, omega, k', b'), four columns
+
+so both functions raise on any current agent. The surviving idea worth re-implementing is
+clustering firms by the shape of their policy with a silhouette-selected cluster count; the
+code around it is a rewrite, not a port. Nothing imported this module when it was archived.
+"""
+
 from __future__ import annotations
 
 import numpy as np
@@ -45,9 +59,7 @@ def evaluate_firm_beliefs(
             kp, _ = agent.get_expected_action(z=z, k=float(kv), b=b)
             kp_arr[j, i_k] = kp
             i_val = kp - (1.0 - delta) * kv
-            q_mean, q_std = agent.gp.predict(
-                np.array([[z, kv, i_val]]), return_std=True
-            )
+            q_mean, q_std = agent.gp.predict(np.array([[z, kv, i_val]]), return_std=True)
             q_arr[j, i_k] = q_mean[0]
             std_arr[j, i_k] = q_std[0]
 

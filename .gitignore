@@ -123,8 +123,9 @@ data/interim/
 # Docs and HTML
 # =========================
 docs/_build/
-docs/_static/
-docs/_templates/
+# _static/ and _templates/ are docs SOURCE (custom css, template overrides), not build
+# output: conf.py declares both, so ignoring them made the Sphinx build fail on a fresh
+# checkout even though it passed locally.
 *.html
 *.doctree
 *.pickle
