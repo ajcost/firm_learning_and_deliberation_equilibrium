@@ -1,0 +1,763 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Environment" href="environment.html"><link rel="prev" title="Belief" href="belief.html">
+
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>Reasoning - Experience and Reasoning documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">Experience and Reasoning  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <span class="sidebar-brand-text">Experience and Reasoning  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="belief.html">Belief</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Reasoning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="environment.html">Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="agents.html">Agents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver.html">Driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html">Visualization</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/api/reasoning.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="reasoning">
+<h1>Reasoning<a class="headerlink" href="#reasoning" title="Link to this heading">¶</a></h1>
+<p>Deliberation: pricing a menu’s contrasts and answering them. Pure math and a protocol — this
+layer imports nothing first-party.</p>
+<section id="module-src.simulation.reasoning.planner">
+<span id="planner"></span><h2>Planner<a class="headerlink" href="#module-src.simulation.reasoning.planner" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Signal">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">src.simulation.reasoning.planner.</span></span><span class="sig-name descname"><span class="pre">Signal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/planner.html#Signal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.planner.Signal" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Immutable object representing a single contrast question about <span class="math notranslate nohighlight">\(Q\)</span> on a menu, and the precision it is acquired at.</p>
+<p>The oracle returns <span class="math notranslate nohighlight">\(y = w^\top Q^*(X) + \eta\)</span>, <span class="math notranslate nohighlight">\(\eta \sim N(0, \sigma^2)\)</span>, with
+<span class="math notranslate nohighlight">\(\sigma^2 = \lambda\theta/(\lambda-\theta)\)</span> set so that the posterior eigenvalue falls
+to the water level <span class="math notranslate nohighlight">\(\theta\)</span>.</p>
+<p>The weights are the eigenvectors <span class="math notranslate nohighlight">\(\psi\)</span> of the contrast matrix
+<span class="math notranslate nohighlight">\(\tilde K = W^{1/2} P_W \Sigma P_W^\top W^{1/2}\)</span>, rescaled by cell measure,
+<span class="math notranslate nohighlight">\(w = W^{1/2}\psi\)</span>; on a uniform mesh <span class="math notranslate nohighlight">\(w \propto \psi\)</span>. Then
+<span class="math notranslate nohighlight">\(\sum_j w_j Q_j \approx \int \phi\, Q\, \mathrm{d}c\)</span> is mesh-invariant and
+<span class="math notranslate nohighlight">\(\sum_j w_j = 0\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>w</strong> (<em>np.ndarray</em>) – Node weights, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>; sum to zero.</p></li>
+<li><p><strong>noise</strong> (<em>float</em>) – Signal noise variance <span class="math notranslate nohighlight">\(\sigma^2\)</span>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Signal.w">
+<span class="sig-name descname"><span class="pre">w</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></span><a class="headerlink" href="#src.simulation.reasoning.planner.Signal.w" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Signal.noise">
+<span class="sig-name descname"><span class="pre">noise</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#src.simulation.reasoning.planner.Signal.noise" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Plan">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">src.simulation.reasoning.planner.</span></span><span class="sig-name descname"><span class="pre">Plan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/planner.html#Plan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.planner.Plan" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Immutable object representing the agent’s one period reasoning plan.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>delta</strong> (<em>float</em>) – Temperature <span class="math notranslate nohighlight">\(\delta_t\)</span>.</p></li>
+<li><p><strong>theta</strong> (<em>float</em>) – Water level <span class="math notranslate nohighlight">\(\theta_t\)</span>.</p></li>
+<li><p><strong>signals</strong> (<em>tuple</em>) – The reasoning <a class="reference internal" href="#src.simulation.reasoning.planner.Signal" title="src.simulation.reasoning.planner.Signal"><code class="xref py py-class docutils literal notranslate"><span class="pre">Signal</span></code></a> s to acquire this period.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Plan.delta">
+<span class="sig-name descname"><span class="pre">delta</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#src.simulation.reasoning.planner.Plan.delta" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Plan.theta">
+<span class="sig-name descname"><span class="pre">theta</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#src.simulation.reasoning.planner.Plan.theta" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Plan.signals">
+<span class="sig-name descname"><span class="pre">signals</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#src.simulation.reasoning.planner.Signal" title="src.simulation.reasoning.planner.Signal"><span class="pre">Signal</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></span><a class="headerlink" href="#src.simulation.reasoning.planner.Plan.signals" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Decision">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">src.simulation.reasoning.planner.</span></span><span class="sig-name descname"><span class="pre">Decision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">probs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plan</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/planner.html#Decision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.planner.Decision" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Immutable object representing the agent’s one-period decision.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>probs</strong> (<em>np.ndarray</em>) – Choice probabilities <span class="math notranslate nohighlight">\(p_t \propto e^{\hat Q_t/\delta_t}\Delta\)</span>,
+shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>, from the post-reasoning mean.</p></li>
+<li><p><strong>plan</strong> (<a class="reference internal" href="#src.simulation.reasoning.planner.Plan" title="src.simulation.reasoning.planner.Plan"><em>Plan</em></a>) – The agent’s reasoning plan that produced the choice probabilities.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Decision.probs">
+<span class="sig-name descname"><span class="pre">probs</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></span><a class="headerlink" href="#src.simulation.reasoning.planner.Decision.probs" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Decision.plan">
+<span class="sig-name descname"><span class="pre">plan</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#src.simulation.reasoning.planner.Plan" title="src.simulation.reasoning.planner.Plan"><span class="pre">Plan</span></a></span><a class="headerlink" href="#src.simulation.reasoning.planner.Decision.plan" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Planner">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">src.simulation.reasoning.planner.</span></span><span class="sig-name descname"><span class="pre">Planner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kappa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/planner.html#Planner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.planner.Planner" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Builds and solves the experience-reasoning plan for the agent.</p>
+<p>Jointly solves for <span class="math notranslate nohighlight">\(\delta_t\)</span> and <span class="math notranslate nohighlight">\(\theta_t\)</span> given the menu and the reasoning cost.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kappa</strong> (<em>float</em>) – Shadow price of one unit of reasoning. Alternatively, regularization parameter for reasoning.</p></li>
+<li><p><strong>h</strong> (<em>float</em>) – Entropy-floor scaling parameter.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Planner.softmax">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">softmax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">areas</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/planner.html#Planner.softmax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.planner.Planner.softmax" title="Link to this definition">¶</a></dt>
+<dd><p>Choice probabilities at temperature <code class="docutils literal notranslate"><span class="pre">delta</span></code> against the mesh measure.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\pi_j = \frac{\exp(q_j/\delta)\, \Delta_j}{\sum_k \exp(q_k/\delta)\, \Delta_k}\]</div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>q</strong> (<em>np.ndarray</em>) – Action values of all actions on the menu, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p></li>
+<li><p><strong>delta</strong> (<em>float</em>) – Temperature.</p></li>
+<li><p><strong>areas</strong> (<em>np.ndarray</em>) – Cell areas <span class="math notranslate nohighlight">\(\Delta_j\)</span>, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Probabilities, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Planner.entropy">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">probs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">areas</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/planner.html#Planner.entropy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.planner.Planner.entropy" title="Link to this definition">¶</a></dt>
+<dd><p>Differential entropy of <code class="docutils literal notranslate"><span class="pre">probs</span></code> on the mesh, in nats.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[H = -\sum_j \pi_j \ln \pi_j + \sum_j \pi_j \ln \Delta_j\]</div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>probs</strong> (<em>np.ndarray</em>) – Probability vector, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p></li>
+<li><p><strong>areas</strong> (<em>np.ndarray</em>) – Cell areas, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Entropy in nats.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Planner.greedy">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">greedy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">areas</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/planner.html#Planner.greedy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.planner.Planner.greedy" title="Link to this definition">¶</a></dt>
+<dd><p>Find best believed action <span class="math notranslate nohighlight">\(\delta \to 0\)</span> limit of <a class="reference internal" href="#src.simulation.reasoning.planner.Planner.softmax" title="src.simulation.reasoning.planner.Planner.softmax"><code class="xref py py-meth docutils literal notranslate"><span class="pre">softmax()</span></code></a>.</p>
+<p>Tie-breaking is done proportionally to the areas of the tied actions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>q</strong> (<em>np.ndarray</em>) – Action values, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p></li>
+<li><p><strong>areas</strong> (<em>np.ndarray</em>) – Cell areas, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Probabilities concentrated on the maximisers, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Planner.contrast_trace">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">contrast_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">areas</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/planner.html#Planner.contrast_trace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.planner.Planner.contrast_trace" title="Link to this definition">¶</a></dt>
+<dd><p>Total advantage uncertainty <span class="math notranslate nohighlight">\(V\)</span> on the menu.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[V = \sum_j \Delta_j \big[P_W \Sigma P_W^\top\big]_{jj}
+  = \Delta^\top \operatorname{diag}\Sigma - \frac{\Delta^\top \Sigma \Delta}{L}\]</div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Sigma</strong> (<em>np.ndarray</em>) – Prior covariance on the menu, shape <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">N)</span></code>.</p></li>
+<li><p><strong>areas</strong> (<em>np.ndarray</em>) – Cell areas, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="math notranslate nohighlight">\(V\)</span>, equal to the sum of the <a class="reference internal" href="#src.simulation.reasoning.planner.Planner.spectrum" title="src.simulation.reasoning.planner.Planner.spectrum"><code class="xref py py-meth docutils literal notranslate"><span class="pre">spectrum()</span></code></a>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Planner.spectrum">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">areas</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigen_tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_vectors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/planner.html#Planner.spectrum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.planner.Planner.spectrum" title="Link to this definition">¶</a></dt>
+<dd><p>Eigendecompose the weighted contrast covariance, clip negatives, and sort eigenvalues in descending order.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\tilde K = W^{1/2} P_W \Sigma P_W^\top W^{1/2}, \qquad
+P_W = I - \frac{\mathbf{1}\Delta^\top}{L}\]</div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Sigma</strong> (<em>np.ndarray</em>) – Prior covariance on the menu, shape <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">N)</span></code>.</p></li>
+<li><p><strong>areas</strong> (<em>np.ndarray</em>) – Cell areas, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p></li>
+<li><p><strong>eigen_tolerance</strong> (<em>float</em>) – Tolerance for a “numerically nonzero” eigenvalue.</p></li>
+<li><p><strong>return_vectors</strong> (<em>bool</em>) – Return eigenvectors. Optional. (default: <code class="docutils literal notranslate"><span class="pre">False</span></code>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">lam</span></code> <code class="docutils literal notranslate"><span class="pre">(m,)</span></code>, or <code class="docutils literal notranslate"><span class="pre">(lam,</span> <span class="pre">psi)</span></code> with <code class="docutils literal notranslate"><span class="pre">psi</span></code> <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">m)</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray or tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Planner.floor">
+<span class="sig-name descname"><span class="pre">floor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigenvalues</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/planner.html#Planner.floor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.planner.Planner.floor" title="Link to this definition">¶</a></dt>
+<dd><p>Entropy floor <span class="math notranslate nohighlight">\(\ln(hV)\)</span>, with <span class="math notranslate nohighlight">\(V\)</span> the total advantage uncertainty.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\mathcal{H}(\pi) \ge \ln(hV), \qquad V = \sum_i \tilde\lambda_i\]</div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>eigenvalues</strong> (<em>np.ndarray</em><em> or </em><em>float</em>) – Contrast spectrum, or <span class="math notranslate nohighlight">\(V\)</span> directly.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The floor in nats; <span class="math notranslate nohighlight">\(-\infty\)</span> when it cannot bind.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Planner.theta">
+<span class="sig-name descname"><span class="pre">theta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lam</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/planner.html#Planner.theta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.planner.Planner.theta" title="Link to this definition">¶</a></dt>
+<dd><p>Water level implied by a temperature.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\frac{\delta}{\kappa} = \sum_i \min\!\left(1, \frac{\tilde\lambda_i}{\theta}\right)\]</div>
+</div>
+<p>[Need to link this to formula]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>delta</strong> (<em>float</em>) – Temperature.</p></li>
+<li><p><strong>lam</strong> (<em>np.ndarray</em>) – Contrast eigenvalues, descending.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Planner.entropy_policy">
+<span class="sig-name descname"><span class="pre">entropy_policy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">floor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">areas</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/planner.html#Planner.entropy_policy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.planner.Planner.entropy_policy" title="Link to this definition">¶</a></dt>
+<dd><p>Temperature that puts the choice entropy exactly on a floor.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[H\big(\text{softmax}(q/\delta)\big) = \text{floor}\]</div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>q</strong> (<em>np.ndarray</em>) – Action values on the menu, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p></li>
+<li><p><strong>floor</strong> (<em>float</em>) – Entropy floor in nats.</p></li>
+<li><p><strong>areas</strong> (<em>np.ndarray</em>) – Cell areas, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Probabilities and <code class="docutils literal notranslate"><span class="pre">delta</span></code> (<code class="docutils literal notranslate"><span class="pre">0.0</span></code> greedy,
+<code class="docutils literal notranslate"><span class="pre">np.inf</span></code> uniform fallback).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[np.ndarray, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulation.reasoning.planner.Planner.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">areas</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/planner.html#Planner.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.planner.Planner.solve" title="Link to this definition">¶</a></dt>
+<dd><p>Joint solve for the temperature <span class="math notranslate nohighlight">\(\delta\)</span> and the water level <span class="math notranslate nohighlight">\(\theta\)</span>.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[f(\delta) = H\big(\text{softmax}(q/\delta)\big)
+            - \ln\!\big(h\, V^{\text{post}}(\delta)\big),
+\qquad V^{\text{post}}(\delta) = \sum_i \min\{\theta(\delta), \tilde\lambda_i\},\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\theta(\delta)\)</span> solves <span class="math notranslate nohighlight">\(\delta/\kappa = \sum_i \min(1,
+\tilde\lambda_i/\theta)\)</span>.</p>
+<p>Early exits: greedy (<span class="math notranslate nohighlight">\(\delta = 0\)</span>) when the floor
+cannot bind (<code class="docutils literal notranslate"><span class="pre">h</span> <span class="pre">&lt;=</span> <span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">V</span> <span class="pre">&lt;=</span> <span class="pre">0</span></code>, or a floor already below the greedy entropy).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>q</strong> (<em>np.ndarray</em>) – Prior (pre-reasoning) action values on the menu, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p></li>
+<li><p><strong>Sigma</strong> (<em>np.ndarray</em>) – Prior covariance on the menu, shape <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">N)</span></code>.</p></li>
+<li><p><strong>areas</strong> (<em>np.ndarray</em>) – Cell areas, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Resulting decision, the chosen action probabilities.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#src.simulation.reasoning.planner.Decision" title="src.simulation.reasoning.planner.Decision">Decision</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-src.simulation.reasoning.oracle">
+<span id="oracle"></span><h2>Oracle<a class="headerlink" href="#module-src.simulation.reasoning.oracle" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulation.reasoning.oracle.Oracle">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">src.simulation.reasoning.oracle.</span></span><span class="sig-name descname"><span class="pre">Oracle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/oracle.html#Oracle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.oracle.Oracle" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>Answers query or weighted contrast about <span class="math notranslate nohighlight">\(Q\)</span> on a menu.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulation.reasoning.oracle.Oracle.query">
+<span class="sig-name descname"><span class="pre">query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/oracle.html#Oracle.query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.oracle.Oracle.query" title="Link to this definition">¶</a></dt>
+<dd><p>Return <span class="math notranslate nohighlight">\(w^\top Q^*(X) + \eta\)</span>, <span class="math notranslate nohighlight">\(\eta \sim N(0, \text{noise})\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>np.ndarray</em>) – Menu features, shape <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">d)</span></code>.</p></li>
+<li><p><strong>w</strong> (<em>np.ndarray</em>) – Query weights or contrast weights, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p></li>
+<li><p><strong>noise</strong> (<em>float</em>) – Variance <span class="math notranslate nohighlight">\(\sigma^2\)</span> the plan priced uncertainty from rational inattention.</p></li>
+<li><p><strong>rng</strong> (<em>np.random.Generator</em>) – Source of the answer noise.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The realised answer.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulation.reasoning.oracle.VFIOracle">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">src.simulation.reasoning.oracle.</span></span><span class="sig-name descname"><span class="pre">VFIOracle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vfi_agent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/oracle.html#VFIOracle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.oracle.VFIOracle" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulation.reasoning.oracle.VFIOracle.q">
+<span class="sig-name descname"><span class="pre">q</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/oracle.html#VFIOracle.q"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.oracle.VFIOracle.q" title="Link to this definition">¶</a></dt>
+<dd><p>True action values at the menu features <code class="docutils literal notranslate"><span class="pre">X</span></code>, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulation.reasoning.oracle.VFIOracle.query">
+<span class="sig-name descname"><span class="pre">query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/simulation/reasoning/oracle.html#VFIOracle.query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.simulation.reasoning.oracle.VFIOracle.query" title="Link to this definition">¶</a></dt>
+<dd><p>Project the true <span class="math notranslate nohighlight">\(Q^*\)</span> on <code class="docutils literal notranslate"><span class="pre">w</span></code> and add the priced answer noise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>np.ndarray</em>) – Menu features, shape <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">d)</span></code>.</p></li>
+<li><p><strong>w</strong> (<em>np.ndarray</em>) – Contrast weights, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code>.</p></li>
+<li><p><strong>noise</strong> (<em>float</em>) – Answer variance <span class="math notranslate nohighlight">\(\sigma^2\)</span>; <code class="docutils literal notranslate"><span class="pre">0</span></code> answers exactly.</p></li>
+<li><p><strong>rng</strong> (<em>np.random.Generator</em>) – Source of the answer noise.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="math notranslate nohighlight">\(w^\top Q^*(X) + \eta\)</span>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="environment.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Environment</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="belief.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Belief</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Adam Costarino
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Reasoning</a><ul>
+<li><a class="reference internal" href="#module-src.simulation.reasoning.planner">Planner</a><ul>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Signal"><code class="docutils literal notranslate"><span class="pre">Signal</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Signal.w"><code class="docutils literal notranslate"><span class="pre">Signal.w</span></code></a></li>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Signal.noise"><code class="docutils literal notranslate"><span class="pre">Signal.noise</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Plan"><code class="docutils literal notranslate"><span class="pre">Plan</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Plan.delta"><code class="docutils literal notranslate"><span class="pre">Plan.delta</span></code></a></li>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Plan.theta"><code class="docutils literal notranslate"><span class="pre">Plan.theta</span></code></a></li>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Plan.signals"><code class="docutils literal notranslate"><span class="pre">Plan.signals</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Decision"><code class="docutils literal notranslate"><span class="pre">Decision</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Decision.probs"><code class="docutils literal notranslate"><span class="pre">Decision.probs</span></code></a></li>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Decision.plan"><code class="docutils literal notranslate"><span class="pre">Decision.plan</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Planner"><code class="docutils literal notranslate"><span class="pre">Planner</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Planner.softmax"><code class="docutils literal notranslate"><span class="pre">Planner.softmax()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Planner.entropy"><code class="docutils literal notranslate"><span class="pre">Planner.entropy()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Planner.greedy"><code class="docutils literal notranslate"><span class="pre">Planner.greedy()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Planner.contrast_trace"><code class="docutils literal notranslate"><span class="pre">Planner.contrast_trace()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Planner.spectrum"><code class="docutils literal notranslate"><span class="pre">Planner.spectrum()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Planner.floor"><code class="docutils literal notranslate"><span class="pre">Planner.floor()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Planner.theta"><code class="docutils literal notranslate"><span class="pre">Planner.theta()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Planner.entropy_policy"><code class="docutils literal notranslate"><span class="pre">Planner.entropy_policy()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulation.reasoning.planner.Planner.solve"><code class="docutils literal notranslate"><span class="pre">Planner.solve()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-src.simulation.reasoning.oracle">Oracle</a><ul>
+<li><a class="reference internal" href="#src.simulation.reasoning.oracle.Oracle"><code class="docutils literal notranslate"><span class="pre">Oracle</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulation.reasoning.oracle.Oracle.query"><code class="docutils literal notranslate"><span class="pre">Oracle.query()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulation.reasoning.oracle.VFIOracle"><code class="docutils literal notranslate"><span class="pre">VFIOracle</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulation.reasoning.oracle.VFIOracle.q"><code class="docutils literal notranslate"><span class="pre">VFIOracle.q()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulation.reasoning.oracle.VFIOracle.query"><code class="docutils literal notranslate"><span class="pre">VFIOracle.query()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    </body>
+</html>
