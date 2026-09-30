@@ -6,7 +6,7 @@ and reasoning agents, common kernel functions, and a module for computing prior 
 to initialize the GP.
 
 Gaussian Process
----------
+----------------
 
 .. automodule:: src.simulation.belief.gp
    :members:

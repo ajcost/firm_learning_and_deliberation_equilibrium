@@ -1,10 +1,14 @@
 """Module for computing prior means to initialize the GP."""
 
 from abc import ABC, abstractmethod
-from warnings import deprecated
 
 import numpy as np
 from scipy.interpolate import interp1d
+
+try:  # warnings.deprecated is 3.13+; typing_extensions backports it for 3.11/3.12
+    from warnings import deprecated
+except ImportError:
+    from typing_extensions import deprecated
 
 
 class PriorMean(ABC):

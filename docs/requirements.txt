@@ -6,3 +6,5 @@
 # failed build.
 sphinx>=8,<10
 furo>=2024.8
+# src/simulation/belief/priors.py imports `deprecated` from here on Python < 3.13.
+typing_extensions>=4.5

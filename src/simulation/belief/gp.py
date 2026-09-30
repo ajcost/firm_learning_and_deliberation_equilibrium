@@ -74,6 +74,42 @@ with
         W K(\mathbf{X}_A, \mathbf{X}_*)
 
 We then can compute the posterior of :math:`Q(\mathbf{X}_*)` at any set of query points :math:`\mathbf{X}_*`.
+
+This operation requires inverting the variance of the observed linear functionals,
+:math:`\mathbf{C} = \operatorname{Var}(\mathbf{r})`. As the number of functionals grows this becomes
+expensive, so we update :math:`\mathbf{C}^{-1}` incrementally using Schur complements.
+
+Let the first :math:`n` functionals be :math:`\mathbf{r}_n = \mathbf{W}_n Q(\mathbf{X}_n) + \boldsymbol{\varepsilon}_n`,
+where :math:`\mathbf{X}_n` (previously we referred to this as :math:`\mathbf{X}_A`, but here the :math:`n + m` notation
+nicely illustrates the stacking of previous and new functionals). Suppose :math:`m` new
+functionals arrive, :math:`\mathbf{r}_m = \mathbf{W}_m Q(\mathbf{X}_m) + \boldsymbol{\varepsilon}_m`. Their variances and
+cross-covariance are
+
+.. math::
+    \mathbf{C}_n &= \mathbf{W}_n K(\mathbf{X}_n, \mathbf{X}_n) \mathbf{W}_n^\top + \operatorname{diag}(\sigma_1^2, \dots, \sigma_n^2), \\
+    \mathbf{C}_m &= \mathbf{W}_m K(\mathbf{X}_m, \mathbf{X}_m) \mathbf{W}_m^\top + \operatorname{diag}(\sigma_{n+1}^2, \dots, \sigma_{n+m}^2), \\
+    \mathbf{V} &= \operatorname{Cov}(\mathbf{r}_n, \mathbf{r}_m) = \mathbf{W}_n K(\mathbf{X}_n, \mathbf{X}_m) \mathbf{W}_m^\top,
+
+so the variance of all :math:`n + m` functionals is
+
+.. math::
+    \mathbf{C}_{n+m} = \begin{pmatrix}
+    \mathbf{C}_n & \mathbf{V} \\
+    \mathbf{V}^\top & \mathbf{C}_m
+    \end{pmatrix}.
+
+By the formula for the inverse of a block matrix (Schur complement), we efficiently update :math:`\mathbf{C}_{n+m}^{-1}`.
+
+.. math::
+
+    \mathbf{C}_{n+m}^{-1} = \begin{pmatrix}
+    \mathbf{C}_n^{-1} + \mathbf{C}_n^{-1} \mathbf{V} (\mathbf{C}_m - \mathbf{V}^\top \mathbf{C}_n^{-1} \mathbf{V})^{-1} \mathbf{V}^\top \mathbf{C}_n^{-1} & -\mathbf{C}_n^{-1} \mathbf{V} (\mathbf{C}_m - \mathbf{V}^\top \mathbf{C}_n^{-1} \mathbf{V})^{-1} \\
+    -(\mathbf{C}_m - \mathbf{V}^\top \mathbf{C}_n^{-1} \mathbf{V})^{-1} \mathbf{V}^\top \mathbf{C}_n^{-1} & (\mathbf{C}_m - \mathbf{V}^\top \mathbf{C}_n^{-1} \mathbf{V})^{-1}
+    \end{pmatrix}.
+
+Which allows for incremental updates of the inverse without inverting the entire matrix, noting that we
+have :math:`\mathbf{C}_n^{-1}` and the Schur complement :math:`\mathbf{C}_m - \mathbf{V}^\top \mathbf{C}_n^{-1} \mathbf{V}` available
+from the previous step.
 """
 
 from collections.abc import Callable
